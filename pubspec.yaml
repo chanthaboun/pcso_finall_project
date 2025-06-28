@@ -1,0 +1,41 @@
+name: pcos_care_app
+description: "A new Flutter project."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.4 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  cupertino_icons: ^1.0.6
+  shared_preferences: ^2.2.2
+  # ເພີ່ມ dependencies ເຫຼົ່ານີ້ສຳລັບ notifications
+  flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.2
+  permission_handler: ^11.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true # ເພີ່ມບັນທັດນີ້ສຳລັບ localization
+
+  # ຖ້າຕ້ອງການໃຊ້ fonts ໃຫ້ດາວໂຫຼດໄຟລ໌ fonts ມາວາງໃນໂຟນເດີ fonts/ ກ່ອນ
+  # fonts:
+  #   - family: NotoSansLao
+  #     fonts:
+  #       - asset: fonts/NotoSansLao-Regular.ttf
+  #       - asset: fonts/NotoSansLao-Bold.ttf
+  #         weight: 700
+
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
