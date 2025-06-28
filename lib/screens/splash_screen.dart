@@ -257,7 +257,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 4),
             const Text(
-              '💪 ມາເລີ່ມຕົ້ນເປັນແມ່ສາວໃນທຸກວັນກັນເຮອ!',
+              '💪 ມາເລີ່ມຕົ້ນເປັນແມ່ສາວໃນທຸກວັນກັນ!',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
