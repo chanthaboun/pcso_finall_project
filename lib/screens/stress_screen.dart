@@ -1,5 +1,4 @@
 // stress_screen.dart
-// Standalone stress management screen - ບໍ່ກະທົບກັບ file ອື່ນ
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';

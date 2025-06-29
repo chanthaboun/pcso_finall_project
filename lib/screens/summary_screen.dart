@@ -1,465 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'dart:convert';
-
-// class SummaryScreen extends StatefulWidget {
-//   const SummaryScreen({super.key});
-
-//   @override
-//   State<SummaryScreen> createState() => _SummaryScreenState();
-// }
-
-// class _SummaryScreenState extends State<SummaryScreen> {
-//   final Map<String, List<Map<String, dynamic>>> _allData = {
-//     'sleep': [],
-//     'nutrition': [],
-//     'exercise': [],
-//     'stress': [],
-//     'period': [],
-//   };
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _loadAllData();
-//   }
-
-//   Future<void> _loadAllData() async {
-//     final prefs = await SharedPreferences.getInstance();
-
-//     setState(() {
-//       _allData['sleep'] = _getData(prefs, 'sleep_records');
-//       _allData['nutrition'] = _getData(prefs, 'nutrition_records');
-//       _allData['exercise'] = _getData(prefs, 'exercise_records');
-//       _allData['stress'] = _getData(prefs, 'stress_records');
-//       _allData['period'] = _getData(prefs, 'period_records');
-//     });
-//   }
-
-//   List<Map<String, dynamic>> _getData(SharedPreferences prefs, String key) {
-//     final data = prefs.getString(key);
-//     if (data != null) {
-//       return List<Map<String, dynamic>>.from(jsonDecode(data));
-//     }
-//     return [];
-//   }
-
-//   List<Map<String, dynamic>> _getRecentData(
-//     List<Map<String, dynamic>> data,
-//     int days,
-//   ) {
-//     final cutoffDate = DateTime.now().subtract(Duration(days: days));
-//     return data.where((record) {
-//       final date = DateTime.parse(record['date']);
-//       return date.isAfter(cutoffDate);
-//     }).toList();
-//   }
-
-//   double _getAverageSleepHours() {
-//     final recentSleep = _getRecentData(_allData['sleep']!, 7);
-//     if (recentSleep.isEmpty) return 0;
-
-//     double totalHours = 0;
-//     for (var record in recentSleep) {
-//       final duration = record['duration'] as String;
-//       final parts = duration.split('h ');
-//       if (parts.length == 2) {
-//         final hours = int.tryParse(parts[0]) ?? 0;
-//         final minutes = int.tryParse(parts[1].replaceAll('m', '')) ?? 0;
-//         totalHours += hours + (minutes / 60);
-//       }
-//     }
-//     return totalHours / recentSleep.length;
-//   }
-
-//   double _getAverageSleepQuality() {
-//     final recentSleep = _getRecentData(_allData['sleep']!, 7);
-//     if (recentSleep.isEmpty) return 0;
-
-//     int totalQuality = 0;
-//     for (var record in recentSleep) {
-//       totalQuality += record['quality'] as int;
-//     }
-//     return totalQuality / recentSleep.length;
-//   }
-
-//   int _getExerciseCount() {
-//     return _getRecentData(_allData['exercise']!, 7).length;
-//   }
-
-//   int _getTotalExerciseMinutes() {
-//     final recentExercise = _getRecentData(_allData['exercise']!, 7);
-//     int totalMinutes = 0;
-//     for (var record in recentExercise) {
-//       totalMinutes += record['duration'] as int;
-//     }
-//     return totalMinutes;
-//   }
-
-//   double _getAverageStressLevel() {
-//     final recentStress = _getRecentData(_allData['stress']!, 7);
-//     if (recentStress.isEmpty) return 0;
-
-//     int totalStress = 0;
-//     for (var record in recentStress) {
-//       totalStress += record['stressLevel'] as int;
-//     }
-//     return totalStress / recentStress.length;
-//   }
-
-//   int _getMealsCount() {
-//     return _getRecentData(_allData['nutrition']!, 7).length;
-//   }
-
-//   String _getHealthStatus() {
-//     final sleepQuality = _getAverageSleepQuality();
-//     final stressLevel = _getAverageStressLevel();
-//     final exerciseCount = _getExerciseCount();
-
-//     if (sleepQuality >= 4 && stressLevel <= 2 && exerciseCount >= 3) {
-//       return 'ດີເລີດ';
-//     } else if (sleepQuality >= 3 && stressLevel <= 3 && exerciseCount >= 2) {
-//       return 'ດີ';
-//     } else if (sleepQuality >= 2 && stressLevel <= 4 && exerciseCount >= 1) {
-//       return 'ປົກກະຕິ';
-//     } else {
-//       return 'ຕ້ອງປັບປຸງ';
-//     }
-//   }
-
-//   Color _getHealthStatusColor() {
-//     final status = _getHealthStatus();
-//     switch (status) {
-//       case 'ດີເລີດ':
-//         return Colors.green;
-//       case 'ດີ':
-//         return Colors.lightGreen;
-//       case 'ປົກກະຕິ':
-//         return Colors.orange;
-//       case 'ຕ້ອງປັບປຸງ':
-//         return Colors.red;
-//       default:
-//         return Colors.grey;
-//     }
-//   }
-
-//   Widget _buildStatCard({
-//     required String title,
-//     required String value,
-//     required IconData icon,
-//     required Color color,
-//     String? subtitle,
-//   }) {
-//     return Container(
-//       padding: const EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(12),
-//         boxShadow: [
-//           BoxShadow(
-//             color: Colors.black.withOpacity(0.05),
-//             blurRadius: 5,
-//             offset: const Offset(0, 1),
-//           ),
-//         ],
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Row(
-//             children: [
-//               Container(
-//                 width: 40,
-//                 height: 40,
-//                 decoration: BoxDecoration(
-//                   color: color.withOpacity(0.1),
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//                 child: Icon(icon, color: color, size: 20),
-//               ),
-//               const SizedBox(width: 12),
-//               Expanded(
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Text(
-//                       title,
-//                       style: const TextStyle(
-//                         fontSize: 12,
-//                         color: Colors.grey,
-//                         fontWeight: FontWeight.w500,
-//                       ),
-//                     ),
-//                     const SizedBox(height: 4),
-//                     Text(
-//                       value,
-//                       style: TextStyle(
-//                         fontSize: 20,
-//                         fontWeight: FontWeight.bold,
-//                         color: color,
-//                       ),
-//                     ),
-//                     if (subtitle != null) ...[
-//                       const SizedBox(height: 2),
-//                       Text(
-//                         subtitle,
-//                         style: const TextStyle(
-//                           fontSize: 10,
-//                           color: Colors.grey,
-//                         ),
-//                       ),
-//                     ],
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFFFCE4EC),
-//       appBar: AppBar(
-//         title: const Text(
-//           'ສະຫຼູບຜົນ',
-//           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-//         ),
-//         backgroundColor: Colors.transparent,
-//         elevation: 0,
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back, color: Colors.black87),
-//           onPressed: () => Navigator.of(context).pop(),
-//         ),
-//       ),
-//       body: SafeArea(
-//         child: Padding(
-//           padding: const EdgeInsets.all(20.0),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               // Overall health status
-//               Container(
-//                 width: double.infinity,
-//                 padding: const EdgeInsets.all(20),
-//                 decoration: BoxDecoration(
-//                   gradient: LinearGradient(
-//                     colors: [
-//                       _getHealthStatusColor().withOpacity(0.8),
-//                       _getHealthStatusColor(),
-//                     ],
-//                     begin: Alignment.topLeft,
-//                     end: Alignment.bottomRight,
-//                   ),
-//                   borderRadius: BorderRadius.circular(16),
-//                 ),
-//                 child: Column(
-//                   children: [
-//                     const Icon(Icons.favorite, color: Colors.white, size: 40),
-//                     const SizedBox(height: 12),
-//                     const Text(
-//                       'ສະຖານະສຸຂະພາບໂດຍລວມ',
-//                       style: TextStyle(
-//                         fontSize: 16,
-//                         color: Colors.white,
-//                         fontWeight: FontWeight.w500,
-//                       ),
-//                     ),
-//                     const SizedBox(height: 8),
-//                     Text(
-//                       _getHealthStatus(),
-//                       style: const TextStyle(
-//                         fontSize: 28,
-//                         fontWeight: FontWeight.bold,
-//                         color: Colors.white,
-//                       ),
-//                     ),
-//                     const SizedBox(height: 8),
-//                     const Text(
-//                       'ຈາກຂໍ້ມູນ 7 ວັນທີ່ຜ່ານມາ',
-//                       style: TextStyle(fontSize: 12, color: Colors.white70),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               const SizedBox(height: 24),
-
-//               // Statistics grid
-//               const Text(
-//                 'ສະຖິຕິ 7 ວັນທີ່ຜ່ານມາ',
-//                 style: TextStyle(
-//                   fontSize: 18,
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.black87,
-//                 ),
-//               ),
-//               const SizedBox(height: 16),
-
-//               Expanded(
-//                 child: GridView.count(
-//                   crossAxisCount: 2,
-//                   crossAxisSpacing: 12,
-//                   mainAxisSpacing: 12,
-//                   childAspectRatio: 1.2,
-//                   children: [
-//                     _buildStatCard(
-//                       title: 'ການນອນເສຍງ',
-//                       value: '${_getAverageSleepHours().toStringAsFixed(1)}h',
-//                       icon: Icons.bedtime,
-//                       color: Colors.purple,
-//                       subtitle:
-//                           'ຄຸນນະພາບ: ${_getAverageSleepQuality().toStringAsFixed(1)}/5',
-//                     ),
-//                     _buildStatCard(
-//                       title: 'ອອກກຳລັງກາຍ',
-//                       value: '${_getExerciseCount()}',
-//                       icon: Icons.fitness_center,
-//                       color: Colors.blue,
-//                       subtitle: '${_getTotalExerciseMinutes()} ນາທີ',
-//                     ),
-//                     _buildStatCard(
-//                       title: 'ລະດັບຄວາມຄຽດ',
-//                       value: '${_getAverageStressLevel().toStringAsFixed(1)}/5',
-//                       icon: Icons.psychology,
-//                       color:
-//                           _getAverageStressLevel() <= 2
-//                               ? Colors.green
-//                               : _getAverageStressLevel() <= 3
-//                               ? Colors.orange
-//                               : Colors.red,
-//                       subtitle: 'ເສຍງສະເລ່ຍ',
-//                     ),
-//                     _buildStatCard(
-//                       title: 'ການກິນ',
-//                       value: '${_getMealsCount()}',
-//                       icon: Icons.restaurant,
-//                       color: Colors.orange,
-//                       subtitle: 'ມື້ອາຫານທີ່ບັນທຶກ',
-//                     ),
-//                   ],
-//                 ),
-//               ),
-
-//               const SizedBox(height: 16),
-
-//               // Recommendations
-//               Container(
-//                 padding: const EdgeInsets.all(16),
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.circular(12),
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: Colors.black.withOpacity(0.05),
-//                       blurRadius: 5,
-//                       offset: const Offset(0, 1),
-//                     ),
-//                   ],
-//                 ),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     const Row(
-//                       children: [
-//                         Icon(
-//                           Icons.lightbulb,
-//                           color: Color(0xFFE91E63),
-//                           size: 20,
-//                         ),
-//                         SizedBox(width: 8),
-//                         Text(
-//                           'ຄຳແນະນຳ',
-//                           style: TextStyle(
-//                             fontSize: 16,
-//                             fontWeight: FontWeight.bold,
-//                             color: Color(0xFFE91E63),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                     const SizedBox(height: 12),
-//                     ..._getRecommendations()
-//                         .map(
-//                           (recommendation) => Padding(
-//                             padding: const EdgeInsets.only(bottom: 8),
-//                             child: Row(
-//                               crossAxisAlignment: CrossAxisAlignment.start,
-//                               children: [
-//                                 const Text(
-//                                   '• ',
-//                                   style: TextStyle(
-//                                     fontSize: 16,
-//                                     color: Color(0xFFE91E63),
-//                                     fontWeight: FontWeight.bold,
-//                                   ),
-//                                 ),
-//                                 Expanded(
-//                                   child: Text(
-//                                     recommendation,
-//                                     style: const TextStyle(
-//                                       fontSize: 14,
-//                                       color: Colors.black87,
-//                                     ),
-//                                   ),
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                         )
-//                         ,
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   List<String> _getRecommendations() {
-//     List<String> recommendations = [];
-
-//     // Sleep recommendations
-//     final sleepHours = _getAverageSleepHours();
-//     final sleepQuality = _getAverageSleepQuality();
-
-//     if (sleepHours < 7) {
-//       recommendations.add('ພະຍາຍາມນອນໃຫ້ຄົບ 7-9 ຊົ່ວໂມງຕໍ່ຄືນ');
-//     }
-//     if (sleepQuality < 3) {
-//       recommendations.add('ປັບປຸງຄຸນນະພາບການນອນດ້ວຍການສ້າງບັນຍາກາດທີ່ສະຫງົບ');
-//     }
-
-//     // Exercise recommendations
-//     final exerciseCount = _getExerciseCount();
-//     if (exerciseCount < 3) {
-//       recommendations.add('ເພີ່ມການອອກກຳລັງກາຍເປັນຢ່າງນ້ອຍ 3 ຄັ້ງຕໍ່ອາທິດ');
-//     }
-
-//     // Stress recommendations
-//     final stressLevel = _getAverageStressLevel();
-//     if (stressLevel > 3) {
-//       recommendations.add('ຝຶກເຕັກນິກການຜ່ອນຄາຍ ເຊັ່ນ: ການຫາຍໃຈເລິກ ຫຼື ຢູຄະ');
-//     }
-
-//     // General recommendations
-//     if (recommendations.isEmpty) {
-//       recommendations.add('ສຸຂະພາບຂອງເຈົ້າດີຫຼາຍ! ສືບຕໍ່ຮັກສານີ້ປະແບບນີ້ຕໍ່ໄປ');
-//     }
-
-//     if (_getMealsCount() < 14) {
-//       // Less than 2 meals per day average
-//       recommendations.add('ບັນທຶກການກິນໃຫ້ສົມ່ຳສະເມີເພື່ອຕິດຕາມໂພຊະນາການ');
-//     }
-
-//     return recommendations;
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -486,6 +24,7 @@ class _SummaryScreenState extends State<SummaryScreen>
   late TabController _tabController;
   int _selectedPeriod = 7; // 7, 30, 90 days
   bool _isLaoLanguage = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -501,22 +40,41 @@ class _SummaryScreenState extends State<SummaryScreen>
   }
 
   Future<void> _loadAllData() async {
-    final prefs = await SharedPreferences.getInstance();
-
     setState(() {
-      _allData['sleep'] = _getData(prefs, 'sleep_records');
-      _allData['nutrition'] = _getData(prefs, 'nutrition_records');
-      _allData['exercise'] = _getData(prefs, 'exercise_records');
-      _allData['stress'] = _getData(prefs, 'stress_records');
-      _allData['period'] = _getData(prefs, 'period_records');
-      _allData['goals'] = _getData(prefs, 'user_goals');
+      _isLoading = true;
     });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      setState(() {
+        _allData['sleep'] = _getData(prefs, 'sleep_records');
+        _allData['nutrition'] = _getData(prefs, 'nutrition_records');
+        _allData['exercise'] = _getData(prefs, 'exercise_records');
+        _allData['stress'] = _getData(prefs, 'stress_records');
+        _allData['period'] = _getData(prefs, 'period_records');
+        _allData['goals'] = _getData(prefs, 'user_goals');
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      debugPrint('Error loading data: $e');
+    }
   }
 
   List<Map<String, dynamic>> _getData(SharedPreferences prefs, String key) {
-    final data = prefs.getString(key);
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(jsonDecode(data));
+    try {
+      final data = prefs.getString(key);
+      if (data != null && data.isNotEmpty) {
+        final decoded = jsonDecode(data);
+        if (decoded is List) {
+          return List<Map<String, dynamic>>.from(decoded);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error parsing data for $key: $e');
     }
     return [];
   }
@@ -525,196 +83,401 @@ class _SummaryScreenState extends State<SummaryScreen>
     List<Map<String, dynamic>> data,
     int days,
   ) {
-    final cutoffDate = DateTime.now().subtract(Duration(days: days));
-    return data.where((record) {
-      final date = DateTime.parse(record['date'] ??
-          record['startDate'] ??
-          DateTime.now().toIso8601String());
-      return date.isAfter(cutoffDate);
-    }).toList();
+    if (data.isEmpty) return [];
+
+    try {
+      final cutoffDate = DateTime.now().subtract(Duration(days: days));
+      return data.where((record) {
+        try {
+          final dateStr = record['date'] ??
+              record['startDate'] ??
+              DateTime.now().toIso8601String();
+          final date = DateTime.parse(dateStr);
+          return date.isAfter(cutoffDate);
+        } catch (e) {
+          debugPrint('Error parsing date: $e');
+          return false;
+        }
+      }).toList();
+    } catch (e) {
+      debugPrint('Error filtering recent data: $e');
+      return [];
+    }
   }
 
   // ========== SLEEP ANALYTICS ==========
   double _getAverageSleepHours() {
-    final recentSleep = _getRecentData(_allData['sleep']!, _selectedPeriod);
-    if (recentSleep.isEmpty) return 0;
+    try {
+      final recentSleep = _getRecentData(_allData['sleep']!, _selectedPeriod);
+      if (recentSleep.isEmpty) return 0;
 
-    double totalHours = 0;
-    for (var record in recentSleep) {
-      final duration = record['duration'] as String;
-      final parts = duration.split('h ');
-      if (parts.length == 2) {
-        final hours = int.tryParse(parts[0]) ?? 0;
-        final minutes = int.tryParse(parts[1].replaceAll('m', '')) ?? 0;
-        totalHours += hours + (minutes / 60);
+      double totalHours = 0;
+      int validRecords = 0;
+
+      for (var record in recentSleep) {
+        try {
+          final duration = record['duration'];
+          if (duration != null) {
+            if (duration is num) {
+              totalHours += duration.toDouble();
+              validRecords++;
+            } else if (duration is String) {
+              // Handle "8h 30m" format
+              final parts = duration.split('h ');
+              if (parts.length == 2) {
+                final hours = int.tryParse(parts[0]) ?? 0;
+                final minutes = int.tryParse(parts[1].replaceAll('m', '')) ?? 0;
+                totalHours += hours + (minutes / 60);
+                validRecords++;
+              } else {
+                // Handle simple hour format
+                final hours = double.tryParse(
+                        duration.replaceAll('h', '').replaceAll('m', '')) ??
+                    0;
+                totalHours += hours;
+                validRecords++;
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error parsing sleep duration: $e');
+        }
       }
+
+      return validRecords > 0 ? totalHours / validRecords : 0;
+    } catch (e) {
+      debugPrint('Error calculating average sleep hours: $e');
+      return 0;
     }
-    return totalHours / recentSleep.length;
   }
 
   double _getAverageSleepQuality() {
-    final recentSleep = _getRecentData(_allData['sleep']!, _selectedPeriod);
-    if (recentSleep.isEmpty) return 0;
+    try {
+      final recentSleep = _getRecentData(_allData['sleep']!, _selectedPeriod);
+      if (recentSleep.isEmpty) return 0;
 
-    int totalQuality = 0;
-    for (var record in recentSleep) {
-      totalQuality += record['quality'] as int;
+      int totalQuality = 0;
+      int validRecords = 0;
+
+      for (var record in recentSleep) {
+        try {
+          final quality = record['quality'];
+          if (quality != null && quality is num) {
+            totalQuality += quality.toInt();
+            validRecords++;
+          }
+        } catch (e) {
+          debugPrint('Error parsing sleep quality: $e');
+        }
+      }
+
+      return validRecords > 0 ? totalQuality / validRecords : 0;
+    } catch (e) {
+      debugPrint('Error calculating average sleep quality: $e');
+      return 0;
     }
-    return totalQuality / recentSleep.length;
   }
 
   int _getSleepConsistencyScore() {
-    final recentSleep = _getRecentData(_allData['sleep']!, _selectedPeriod);
-    if (recentSleep.length < 3) return 0;
+    try {
+      final recentSleep = _getRecentData(_allData['sleep']!, _selectedPeriod);
+      if (recentSleep.length < 3) return 0;
 
-    List<DateTime> bedtimes = [];
-    for (var record in recentSleep) {
-      final bedtime = DateTime.parse(record['bedtime']);
-      bedtimes.add(bedtime);
+      List<DateTime> bedtimes = [];
+      for (var record in recentSleep) {
+        try {
+          final bedtimeStr = record['bedtime'] ?? record['date'];
+          if (bedtimeStr != null) {
+            final bedtime = DateTime.parse(bedtimeStr);
+            bedtimes.add(bedtime);
+          }
+        } catch (e) {
+          debugPrint('Error parsing bedtime: $e');
+        }
+      }
+
+      if (bedtimes.length < 2) return 0;
+
+      // Calculate variance in sleep times
+      double totalVariance = 0;
+      for (int i = 1; i < bedtimes.length; i++) {
+        final diff = bedtimes[i].difference(bedtimes[i - 1]).inMinutes.abs();
+        totalVariance += diff;
+      }
+
+      final avgVariance = totalVariance / (bedtimes.length - 1);
+      return math.max(0, (100 - (avgVariance / 60 * 20)).round());
+    } catch (e) {
+      debugPrint('Error calculating sleep consistency: $e');
+      return 0;
     }
-
-    // Calculate variance in sleep times
-    double totalVariance = 0;
-    for (int i = 1; i < bedtimes.length; i++) {
-      final diff = bedtimes[i].difference(bedtimes[i - 1]).inMinutes.abs();
-      totalVariance += diff;
-    }
-
-    final avgVariance = totalVariance / (bedtimes.length - 1);
-    return math.max(0, (100 - (avgVariance / 60 * 20)).round());
   }
 
   // ========== EXERCISE ANALYTICS ==========
   int _getExerciseCount() {
-    return _getRecentData(_allData['exercise']!, _selectedPeriod).length;
+    try {
+      return _getRecentData(_allData['exercise']!, _selectedPeriod).length;
+    } catch (e) {
+      debugPrint('Error getting exercise count: $e');
+      return 0;
+    }
   }
 
   int _getTotalExerciseMinutes() {
-    final recentExercise =
-        _getRecentData(_allData['exercise']!, _selectedPeriod);
-    int totalMinutes = 0;
-    for (var record in recentExercise) {
-      totalMinutes += record['duration'] as int;
+    try {
+      final recentExercise =
+          _getRecentData(_allData['exercise']!, _selectedPeriod);
+      int totalMinutes = 0;
+
+      for (var record in recentExercise) {
+        try {
+          final duration = record['duration'];
+          if (duration != null && duration is num) {
+            totalMinutes += duration.toInt();
+          }
+        } catch (e) {
+          debugPrint('Error parsing exercise duration: $e');
+        }
+      }
+
+      return totalMinutes;
+    } catch (e) {
+      debugPrint('Error calculating total exercise minutes: $e');
+      return 0;
     }
-    return totalMinutes;
   }
 
   double _getExerciseFrequency() {
-    final exerciseCount = _getExerciseCount();
-    final weeks = _selectedPeriod / 7;
-    return exerciseCount / weeks;
+    try {
+      final exerciseCount = _getExerciseCount();
+      final weeks = _selectedPeriod / 7;
+      return weeks > 0 ? exerciseCount / weeks : 0;
+    } catch (e) {
+      debugPrint('Error calculating exercise frequency: $e');
+      return 0;
+    }
   }
 
   Map<String, int> _getExerciseByType() {
-    final recentExercise =
-        _getRecentData(_allData['exercise']!, _selectedPeriod);
-    Map<String, int> typeCount = {};
+    try {
+      final recentExercise =
+          _getRecentData(_allData['exercise']!, _selectedPeriod);
+      Map<String, int> typeCount = {};
 
-    for (var record in recentExercise) {
-      final type = record['type'] as String;
-      typeCount[type] = (typeCount[type] ?? 0) + 1;
+      for (var record in recentExercise) {
+        try {
+          final type = record['type']?.toString() ?? 'Unknown';
+          typeCount[type] = (typeCount[type] ?? 0) + 1;
+        } catch (e) {
+          debugPrint('Error parsing exercise type: $e');
+        }
+      }
+
+      return typeCount;
+    } catch (e) {
+      debugPrint('Error getting exercise by type: $e');
+      return {};
     }
-    return typeCount;
   }
 
   // ========== STRESS ANALYTICS ==========
   double _getAverageStressLevel() {
-    final recentStress = _getRecentData(_allData['stress']!, _selectedPeriod);
-    if (recentStress.isEmpty) return 0;
+    try {
+      final recentStress = _getRecentData(_allData['stress']!, _selectedPeriod);
+      if (recentStress.isEmpty) return 0;
 
-    int totalStress = 0;
-    for (var record in recentStress) {
-      totalStress += record['stressLevel'] as int;
+      int totalStress = 0;
+      int validRecords = 0;
+
+      for (var record in recentStress) {
+        try {
+          final stressLevel = record['stressLevel'];
+          if (stressLevel != null && stressLevel is num) {
+            totalStress += stressLevel.toInt();
+            validRecords++;
+          }
+        } catch (e) {
+          debugPrint('Error parsing stress level: $e');
+        }
+      }
+
+      return validRecords > 0 ? totalStress / validRecords : 0;
+    } catch (e) {
+      debugPrint('Error calculating average stress level: $e');
+      return 0;
     }
-    return totalStress / recentStress.length;
   }
 
   Map<String, int> _getStressTriggers() {
-    final recentStress = _getRecentData(_allData['stress']!, _selectedPeriod);
-    Map<String, int> triggers = {};
+    try {
+      final recentStress = _getRecentData(_allData['stress']!, _selectedPeriod);
+      Map<String, int> triggers = {};
 
-    for (var record in recentStress) {
-      final cause = record['cause'] as String;
-      triggers[cause] = (triggers[cause] ?? 0) + 1;
+      for (var record in recentStress) {
+        try {
+          final cause = record['cause']?.toString() ?? 'Unknown';
+          triggers[cause] = (triggers[cause] ?? 0) + 1;
+        } catch (e) {
+          debugPrint('Error parsing stress cause: $e');
+        }
+      }
+
+      return triggers;
+    } catch (e) {
+      debugPrint('Error getting stress triggers: $e');
+      return {};
     }
-    return triggers;
   }
 
   List<Map<String, dynamic>> _getStressTrend() {
-    final recentStress = _getRecentData(_allData['stress']!, _selectedPeriod);
-    Map<String, List<int>> dailyStress = {};
+    try {
+      final recentStress = _getRecentData(_allData['stress']!, _selectedPeriod);
+      Map<String, List<int>> dailyStress = {};
 
-    for (var record in recentStress) {
-      final date = DateTime.parse(record['date']);
-      final dateKey = '${date.day}/${date.month}';
-      dailyStress[dateKey] = dailyStress[dateKey] ?? [];
-      dailyStress[dateKey]!.add(record['stressLevel']);
+      for (var record in recentStress) {
+        try {
+          final dateStr = record['date'];
+          final stressLevel = record['stressLevel'];
+
+          if (dateStr != null && stressLevel != null && stressLevel is num) {
+            final date = DateTime.parse(dateStr);
+            final dateKey = '${date.day}/${date.month}';
+            dailyStress[dateKey] = dailyStress[dateKey] ?? [];
+            dailyStress[dateKey]!.add(stressLevel.toInt());
+          }
+        } catch (e) {
+          debugPrint('Error parsing stress trend data: $e');
+        }
+      }
+
+      List<Map<String, dynamic>> trend = [];
+      dailyStress.forEach((date, levels) {
+        if (levels.isNotEmpty) {
+          final avg = levels.reduce((a, b) => a + b) / levels.length;
+          trend.add({'date': date, 'level': avg});
+        }
+      });
+
+      return trend
+        ..sort((a, b) => a['date'].toString().compareTo(b['date'].toString()));
+    } catch (e) {
+      debugPrint('Error getting stress trend: $e');
+      return [];
     }
-
-    List<Map<String, dynamic>> trend = [];
-    dailyStress.forEach((date, levels) {
-      final avg = levels.reduce((a, b) => a + b) / levels.length;
-      trend.add({'date': date, 'level': avg});
-    });
-
-    return trend..sort((a, b) => a['date'].compareTo(b['date']));
   }
 
   // ========== NUTRITION ANALYTICS ==========
   int _getMealsCount() {
-    return _getRecentData(_allData['nutrition']!, _selectedPeriod).length;
+    try {
+      return _getRecentData(_allData['nutrition']!, _selectedPeriod).length;
+    } catch (e) {
+      debugPrint('Error getting meals count: $e');
+      return 0;
+    }
   }
 
   double _getNutritionScore() {
-    final recentNutrition =
-        _getRecentData(_allData['nutrition']!, _selectedPeriod);
-    if (recentNutrition.isEmpty) return 0;
+    try {
+      final recentNutrition =
+          _getRecentData(_allData['nutrition']!, _selectedPeriod);
+      if (recentNutrition.isEmpty) return 0;
 
-    double totalScore = 0;
-    for (var record in recentNutrition) {
-      // Calculate score based on meal completeness and quality
-      int score = 0;
-      if (record['hasProtein'] == true) score += 25;
-      if (record['hasVegetables'] == true) score += 25;
-      if (record['hasCarbs'] == true) score += 25;
-      if (record['waterIntake'] != null && record['waterIntake'] > 0)
-        score += 25;
-      totalScore += score;
+      double totalScore = 0;
+      int validRecords = 0;
+
+      for (var record in recentNutrition) {
+        try {
+          int score = 0;
+          if (record['hasProtein'] == true) score += 25;
+          if (record['hasVegetables'] == true) score += 25;
+          if (record['hasCarbs'] == true) score += 25;
+
+          final waterIntake = record['waterIntake'];
+          if (waterIntake != null && waterIntake is num && waterIntake > 0) {
+            score += 25;
+          }
+
+          totalScore += score;
+          validRecords++;
+        } catch (e) {
+          debugPrint('Error parsing nutrition record: $e');
+        }
+      }
+
+      return validRecords > 0 ? totalScore / validRecords : 0;
+    } catch (e) {
+      debugPrint('Error calculating nutrition score: $e');
+      return 0;
     }
-    return totalScore / recentNutrition.length;
   }
 
   // ========== GOALS ANALYTICS ==========
   Map<String, dynamic> _getGoalsProgress() {
-    final goals = _allData['goals']!;
-    if (goals.isEmpty) return {'total': 0, 'completed': 0, 'rate': 0.0};
+    try {
+      final goals = _allData['goals']!;
+      if (goals.isEmpty) return {'total': 0, 'completed': 0, 'rate': 0.0};
 
-    int totalGoals = goals.length;
-    int completedGoals = goals.where((g) => g['isCompleted'] == true).length;
-    double completionRate = completedGoals / totalGoals * 100;
+      int totalGoals = goals.length;
+      int completedGoals = 0;
 
-    return {
-      'total': totalGoals,
-      'completed': completedGoals,
-      'rate': completionRate,
-    };
+      for (var goal in goals) {
+        try {
+          if (goal['isCompleted'] == true || goal['completed'] == true) {
+            completedGoals++;
+          }
+        } catch (e) {
+          debugPrint('Error checking goal completion: $e');
+        }
+      }
+
+      double completionRate =
+          totalGoals > 0 ? (completedGoals / totalGoals * 100) : 0.0;
+
+      return {
+        'total': totalGoals,
+        'completed': completedGoals,
+        'rate': completionRate,
+      };
+    } catch (e) {
+      debugPrint('Error getting goals progress: $e');
+      return {'total': 0, 'completed': 0, 'rate': 0.0};
+    }
   }
 
   // ========== OVERALL HEALTH SCORE ==========
   int _getOverallHealthScore() {
-    final sleepScore = (_getAverageSleepQuality() / 5 * 100);
-    final exerciseScore = math.min(_getExerciseFrequency() / 3 * 100, 100);
-    final stressScore = math.max(0, 100 - (_getAverageStressLevel() / 5 * 100));
-    final nutritionScore = _getNutritionScore();
-    final consistencyScore = _getSleepConsistencyScore().toDouble();
+    try {
+      final sleepQuality = _getAverageSleepQuality();
+      final sleepScore = sleepQuality > 0 ? (sleepQuality / 5 * 100) : 0;
 
-    final overallScore = (sleepScore +
-            exerciseScore +
-            stressScore +
-            nutritionScore +
-            consistencyScore) /
-        5;
-    return overallScore.round();
+      final exerciseFreq = _getExerciseFrequency();
+      final exerciseScore = math.min(exerciseFreq / 3 * 100, 100);
+
+      final stressLevel = _getAverageStressLevel();
+      final stressScore =
+          stressLevel > 0 ? math.max(0, 100 - (stressLevel / 5 * 100)) : 80;
+
+      final nutritionScore = _getNutritionScore();
+      final consistencyScore = _getSleepConsistencyScore().toDouble();
+
+      final scores = [
+        sleepScore,
+        exerciseScore,
+        stressScore,
+        nutritionScore,
+        consistencyScore
+      ];
+      final validScores = scores.where((score) => score > 0).toList();
+
+      if (validScores.isEmpty) return 50; // Default score if no data
+
+      final overallScore =
+          validScores.reduce((a, b) => a + b) / validScores.length;
+      return math.max(0, math.min(100, overallScore.round()));
+    } catch (e) {
+      debugPrint('Error calculating overall health score: $e');
+      return 50;
+    }
   }
 
   String _getHealthStatus() {
@@ -808,14 +571,20 @@ class _SummaryScreenState extends State<SummaryScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildOverviewTab(),
-          _buildAnalyticsTab(),
-          _buildTrendsTab(),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE91E63)),
+              ),
+            )
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOverviewTab(),
+                _buildAnalyticsTab(),
+                _buildTrendsTab(),
+              ],
+            ),
     );
   }
 
@@ -936,7 +705,9 @@ class _SummaryScreenState extends State<SummaryScreen>
                       : 'Quality ${_getAverageSleepQuality().toStringAsFixed(1)}/5',
                   icon: Icons.bedtime,
                   color: Colors.purple,
-                  progress: _getAverageSleepQuality() / 5,
+                  progress: _getAverageSleepQuality() > 0
+                      ? _getAverageSleepQuality() / 5
+                      : 0,
                 ),
                 _buildCompactStatCard(
                   title: _isLaoLanguage ? 'ອອກກຳລັງ' : 'Exercise',
@@ -957,7 +728,9 @@ class _SummaryScreenState extends State<SummaryScreen>
                       : _getAverageStressLevel() <= 3
                           ? Colors.orange
                           : Colors.red,
-                  progress: 1 - (_getAverageStressLevel() / 5),
+                  progress: _getAverageStressLevel() > 0
+                      ? 1 - (_getAverageStressLevel() / 5)
+                      : 0.8,
                 ),
                 _buildCompactStatCard(
                   title: _isLaoLanguage ? 'ໂພຊະນາການ' : 'Nutrition',
@@ -1151,7 +924,7 @@ class _SummaryScreenState extends State<SummaryScreen>
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                      value: progress,
+                      value: math.max(0, math.min(1, progress)),
                       backgroundColor: Colors.grey[200],
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                       strokeWidth: 2,
@@ -1277,7 +1050,7 @@ class _SummaryScreenState extends State<SummaryScreen>
                       width: 50,
                       height: 50,
                       child: CircularProgressIndicator(
-                        value: goalsData['rate'] / 100,
+                        value: (goalsData['rate'] as double) / 100,
                         backgroundColor: Colors.grey[200],
                         valueColor: const AlwaysStoppedAnimation<Color>(
                             Color(0xFFE91E63)),
@@ -1285,7 +1058,7 @@ class _SummaryScreenState extends State<SummaryScreen>
                       ),
                     ),
                     Text(
-                      '${goalsData['rate'].toStringAsFixed(0)}%',
+                      '${(goalsData['rate'] as double).toStringAsFixed(0)}%',
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -1366,72 +1139,93 @@ class _SummaryScreenState extends State<SummaryScreen>
   List<Map<String, dynamic>> _getAIInsights() {
     List<Map<String, dynamic>> insights = [];
 
-    // Sleep insights
-    final sleepHours = _getAverageSleepHours();
-    final sleepQuality = _getAverageSleepQuality();
-    final consistency = _getSleepConsistencyScore();
+    try {
+      // Sleep insights
+      final sleepHours = _getAverageSleepHours();
+      final sleepQuality = _getAverageSleepQuality();
+      final consistency = _getSleepConsistencyScore();
 
-    if (sleepHours < 7) {
-      insights.add({
-        'text': _isLaoLanguage
-            ? 'ເພີ່ມເວລານອນ ${(7 - sleepHours).toStringAsFixed(1)} ຊົ່ວໂມງ ເພື່ອສຸຂະພາບທີ່ດີຂຶ້ນ'
-            : 'Increase sleep by ${(7 - sleepHours).toStringAsFixed(1)} hours for better health',
-        'icon': Icons.bedtime,
-        'color': Colors.purple,
-      });
-    }
-
-    if (consistency < 70) {
-      insights.add({
-        'text': _isLaoLanguage
-            ? 'ສ້າງລູປະຈຳວັນການນອນທີ່ສະຫມໍ່າສະເຫມີ ເພື່ອປັບປຸງຄຸນນະພາບ'
-            : 'Create a consistent sleep schedule to improve quality',
-        'icon': Icons.schedule,
-        'color': Colors.purple,
-      });
-    }
-
-    // Exercise insights
-    final exerciseFreq = _getExerciseFrequency();
-    if (exerciseFreq < 3) {
-      final needed = (3 - exerciseFreq).ceil();
-      insights.add({
-        'text': _isLaoLanguage
-            ? 'ເພີ່ມການອອກກຳລັງ $needed ຄັ້ງຕໍ່ອາທິດ ເພື່ອບັນລຸເປົ້າຫມາຍ'
-            : 'Add $needed more workout sessions per week to reach goals',
-        'icon': Icons.fitness_center,
-        'color': Colors.blue,
-      });
-    }
-
-    // Stress insights
-    final stressLevel = _getAverageStressLevel();
-    if (stressLevel > 3) {
-      final topTrigger = _getStressTriggers().entries.isEmpty
-          ? null
-          : _getStressTriggers()
-              .entries
-              .reduce((a, b) => a.value > b.value ? a : b);
-
-      if (topTrigger != null) {
+      if (sleepHours > 0 && sleepHours < 7) {
         insights.add({
           'text': _isLaoLanguage
-              ? 'ຄວາມຄຽດຫຼັກມາຈາກ "${topTrigger.key}" - ລອງໃຊ້ເທັກນິກຜ່ອນຄາຍ'
-              : 'Main stress source: "${topTrigger.key}" - try relaxation techniques',
-          'icon': Icons.self_improvement,
-          'color': Colors.red,
+              ? 'ເພີ່ມເວລານອນ ${(7 - sleepHours).toStringAsFixed(1)} ຊົ່ວໂມງ ເພື່ອສຸຂະພາບທີ່ດີຂຶ້ນ'
+              : 'Increase sleep by ${(7 - sleepHours).toStringAsFixed(1)} hours for better health',
+          'icon': Icons.bedtime,
+          'color': Colors.purple,
         });
       }
-    }
 
-    // Positive reinforcement
-    if (insights.isEmpty || _getOverallHealthScore() > 70) {
+      if (consistency > 0 && consistency < 70) {
+        insights.add({
+          'text': _isLaoLanguage
+              ? 'ສ້າງລູປະຈຳວັນການນອນທີ່ສະຫມໍ່າສະເຫມີ ເພື່ອປັບປຸງຄຸນນະພາບ'
+              : 'Create a consistent sleep schedule to improve quality',
+          'icon': Icons.schedule,
+          'color': Colors.purple,
+        });
+      }
+
+      // Exercise insights
+      final exerciseFreq = _getExerciseFrequency();
+      if (exerciseFreq > 0 && exerciseFreq < 3) {
+        final needed = (3 - exerciseFreq).ceil();
+        insights.add({
+          'text': _isLaoLanguage
+              ? 'ເພີ່ມການອອກກຳລັງ $needed ຄັ້ງຕໍ່ອາທິດ ເພື່ອບັນລຸເປົ້າຫມາຍ'
+              : 'Add $needed more workout sessions per week to reach goals',
+          'icon': Icons.fitness_center,
+          'color': Colors.blue,
+        });
+      }
+
+      // Stress insights
+      final stressLevel = _getAverageStressLevel();
+      if (stressLevel > 3) {
+        final triggers = _getStressTriggers();
+        if (triggers.isNotEmpty) {
+          final topTrigger =
+              triggers.entries.reduce((a, b) => a.value > b.value ? a : b);
+
+          insights.add({
+            'text': _isLaoLanguage
+                ? 'ຄວາມຄຽດຫຼັກມາຈາກ "${topTrigger.key}" - ລອງໃຊ້ເທັກນິກຜ່ອນຄາຍ'
+                : 'Main stress source: "${topTrigger.key}" - try relaxation techniques',
+            'icon': Icons.self_improvement,
+            'color': Colors.red,
+          });
+        }
+      }
+
+      // Positive reinforcement
+      if (insights.isEmpty || _getOverallHealthScore() > 70) {
+        insights.add({
+          'text': _isLaoLanguage
+              ? 'ສຸຂະພາບຂອງເຈົ້າຢູ່ໃນເສັ້ນທາງທີ່ດີ! ສືບຕໍ່ຮັກສາແບບນີ້'
+              : 'Your health is on track! Keep up the great work',
+          'icon': Icons.emoji_emotions,
+          'color': Colors.green,
+        });
+      }
+
+      // Default insight if no data
+      if (insights.isEmpty) {
+        insights.add({
+          'text': _isLaoLanguage
+              ? 'ເລີ່ມບັນທຶກຂໍ້ມູນສຸຂະພາບເພື່ອໄດ້ຮັບຄຳແນະນຳ AI'
+              : 'Start logging health data to receive AI insights',
+          'icon': Icons.lightbulb,
+          'color': Colors.blue,
+        });
+      }
+    } catch (e) {
+      debugPrint('Error generating AI insights: $e');
+      // Return default insight
       insights.add({
         'text': _isLaoLanguage
-            ? 'ສຸຂະພາບຂອງເຈົ້າຢູ່ໃນເສັ້ນທາງທີ່ດີ! ສືບຕໍ່ຮັກສາແບບນີ້'
-            : 'Your health is on track! Keep up the great work',
-        'icon': Icons.emoji_emotions,
-        'color': Colors.green,
+            ? 'ສຸຂະພາບຂອງເຈົ້າສຳຄັນ - ສືບຕໍ່ຮັກສາຕົວເອງໃຫ້ດີ!'
+            : 'Your health matters - keep taking care of yourself!',
+        'icon': Icons.favorite,
+        'color': Colors.red,
       });
     }
 
@@ -1507,25 +1301,67 @@ class _SummaryScreenState extends State<SummaryScreen>
   }
 
   List<Widget> _buildExerciseTypesList() {
-    final exerciseTypes = _getExerciseByType();
-    return exerciseTypes.entries.take(3).map((entry) {
-      return _buildAnalysisItem(
-        entry.key,
-        '${entry.value} ${_isLaoLanguage ? 'ຄັ້ງ' : 'times'}',
-        Icons.sports,
-      );
-    }).toList();
+    try {
+      final exerciseTypes = _getExerciseByType();
+      if (exerciseTypes.isEmpty) {
+        return [
+          _buildAnalysisItem(
+            _isLaoLanguage ? 'ບໍ່ມີຂໍ້ມູນ' : 'No data',
+            '-',
+            Icons.info,
+          ),
+        ];
+      }
+
+      return exerciseTypes.entries.take(3).map((entry) {
+        return _buildAnalysisItem(
+          entry.key,
+          '${entry.value} ${_isLaoLanguage ? 'ຄັ້ງ' : 'times'}',
+          Icons.sports,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error building exercise types list: $e');
+      return [
+        _buildAnalysisItem(
+          _isLaoLanguage ? 'ຜິດພາດ' : 'Error',
+          '-',
+          Icons.error,
+        ),
+      ];
+    }
   }
 
   List<Widget> _buildStressTriggersList() {
-    final triggers = _getStressTriggers();
-    return triggers.entries.take(3).map((entry) {
-      return _buildAnalysisItem(
-        entry.key,
-        '${entry.value} ${_isLaoLanguage ? 'ຄັ້ງ' : 'times'}',
-        Icons.warning,
-      );
-    }).toList();
+    try {
+      final triggers = _getStressTriggers();
+      if (triggers.isEmpty) {
+        return [
+          _buildAnalysisItem(
+            _isLaoLanguage ? 'ບໍ່ມີຂໍ້ມູນ' : 'No data',
+            '-',
+            Icons.info,
+          ),
+        ];
+      }
+
+      return triggers.entries.take(3).map((entry) {
+        return _buildAnalysisItem(
+          entry.key,
+          '${entry.value} ${_isLaoLanguage ? 'ຄັ້ງ' : 'times'}',
+          Icons.warning,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error building stress triggers list: $e');
+      return [
+        _buildAnalysisItem(
+          _isLaoLanguage ? 'ຜິດພາດ' : 'Error',
+          '-',
+          Icons.error,
+        ),
+      ];
+    }
   }
 
   Widget _buildTrendCard({
@@ -1579,38 +1415,88 @@ class _SummaryScreenState extends State<SummaryScreen>
   }
 
   Widget _buildHealthScoreChart() {
-    // Simulate daily health scores for the selected period
-    List<double> scores = [];
-    for (int i = 0; i < math.min(_selectedPeriod, 30); i++) {
-      // Generate realistic health score variations
-      final baseScore = _getOverallHealthScore().toDouble();
-      final variation = (math.Random().nextDouble() - 0.5) * 20;
-      scores.add(math.max(0, math.min(100, baseScore + variation)));
-    }
+    try {
+      // Simulate daily health scores for the selected period
+      List<double> scores = [];
+      final daysToShow = math.min(_selectedPeriod, 30);
 
-    return Container(
-      padding: const EdgeInsets.all(8),
-      child: CustomPaint(
-        painter: _LineChartPainter(scores, Colors.green),
-        size: Size.infinite,
-      ),
-    );
+      for (int i = 0; i < daysToShow; i++) {
+        // Generate realistic health score variations
+        final baseScore = _getOverallHealthScore().toDouble();
+        final variation = (math.Random().nextDouble() - 0.5) * 20;
+        scores.add(math.max(0, math.min(100, baseScore + variation)));
+      }
+
+      if (scores.isEmpty) {
+        return Container(
+          height: 100,
+          child: Center(
+            child: Text(
+              _isLaoLanguage ? 'ບໍ່ມີຂໍ້ມູນ' : 'No data available',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+        );
+      }
+
+      return Container(
+        padding: const EdgeInsets.all(8),
+        child: CustomPaint(
+          painter: _LineChartPainter(scores, _getHealthStatusColor()),
+          size: Size.infinite,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error building health score chart: $e');
+      return Container(
+        height: 100,
+        child: Center(
+          child: Text(
+            _isLaoLanguage ? 'ຜິດພາດໃນການສະແດງຜົນ' : 'Chart error',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildStressTrendChart() {
-    final stressTrend = _getStressTrend();
-    if (stressTrend.isEmpty) return Container();
+    try {
+      final stressTrend = _getStressTrend();
+      if (stressTrend.isEmpty) {
+        return Container(
+          height: 100,
+          child: Center(
+            child: Text(
+              _isLaoLanguage ? 'ບໍ່ມີຂໍ້ມູນຄວາມຄຽດ' : 'No stress data',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+        );
+      }
 
-    List<double> stressLevels =
-        stressTrend.map((e) => e['level'] as double).toList();
+      List<double> stressLevels =
+          stressTrend.map((e) => (e['level'] as num).toDouble()).toList();
 
-    return Container(
-      padding: const EdgeInsets.all(8),
-      child: CustomPaint(
-        painter: _LineChartPainter(stressLevels, Colors.red),
-        size: Size.infinite,
-      ),
-    );
+      return Container(
+        padding: const EdgeInsets.all(8),
+        child: CustomPaint(
+          painter: _LineChartPainter(stressLevels, Colors.red),
+          size: Size.infinite,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error building stress trend chart: $e');
+      return Container(
+        height: 100,
+        child: Center(
+          child: Text(
+            _isLaoLanguage ? 'ຜິດພາດໃນການສະແດງຜົນ' : 'Chart error',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildPatternsCard() {
@@ -1646,95 +1532,133 @@ class _SummaryScreenState extends State<SummaryScreen>
   }
 
   Widget _buildWeeklyPattern() {
-    // Calculate activity by day of week
-    Map<int, Map<String, int>> weeklyData = {};
-    for (int i = 1; i <= 7; i++) {
-      weeklyData[i] = {'exercise': 0, 'sleep': 0, 'stress': 0};
-    }
-
-    // Process exercise data
-    for (var record in _getRecentData(_allData['exercise']!, _selectedPeriod)) {
-      final date = DateTime.parse(record['date']);
-      weeklyData[date.weekday]!['exercise'] =
-          (weeklyData[date.weekday]!['exercise']! + 1);
-    }
-
-    // Process sleep data
-    for (var record in _getRecentData(_allData['sleep']!, _selectedPeriod)) {
-      final date = DateTime.parse(record['date']);
-      weeklyData[date.weekday]!['sleep'] =
-          (weeklyData[date.weekday]!['sleep']! + 1);
-    }
-
-    // Process stress data
-    for (var record in _getRecentData(_allData['stress']!, _selectedPeriod)) {
-      final date = DateTime.parse(record['date']);
-      if ((record['stressLevel'] as int) > 3) {
-        weeklyData[date.weekday]!['stress'] =
-            (weeklyData[date.weekday]!['stress']! + 1);
+    try {
+      // Calculate activity by day of week
+      Map<int, Map<String, int>> weeklyData = {};
+      for (int i = 1; i <= 7; i++) {
+        weeklyData[i] = {'exercise': 0, 'sleep': 0, 'stress': 0};
       }
+
+      // Process exercise data
+      final exerciseData =
+          _getRecentData(_allData['exercise']!, _selectedPeriod);
+      for (var record in exerciseData) {
+        try {
+          final dateStr = record['date'];
+          if (dateStr != null) {
+            final date = DateTime.parse(dateStr);
+            weeklyData[date.weekday]!['exercise'] =
+                (weeklyData[date.weekday]!['exercise']! + 1);
+          }
+        } catch (e) {
+          debugPrint('Error processing exercise date: $e');
+        }
+      }
+
+      // Process sleep data
+      final sleepData = _getRecentData(_allData['sleep']!, _selectedPeriod);
+      for (var record in sleepData) {
+        try {
+          final dateStr = record['date'];
+          if (dateStr != null) {
+            final date = DateTime.parse(dateStr);
+            weeklyData[date.weekday]!['sleep'] =
+                (weeklyData[date.weekday]!['sleep']! + 1);
+          }
+        } catch (e) {
+          debugPrint('Error processing sleep date: $e');
+        }
+      }
+
+      // Process stress data
+      final stressData = _getRecentData(_allData['stress']!, _selectedPeriod);
+      for (var record in stressData) {
+        try {
+          final dateStr = record['date'];
+          final stressLevel = record['stressLevel'];
+          if (dateStr != null && stressLevel != null && stressLevel is num) {
+            final date = DateTime.parse(dateStr);
+            if (stressLevel.toInt() > 3) {
+              weeklyData[date.weekday]!['stress'] =
+                  (weeklyData[date.weekday]!['stress']! + 1);
+            }
+          }
+        } catch (e) {
+          debugPrint('Error processing stress date: $e');
+        }
+      }
+
+      final dayNames = _isLaoLanguage
+          ? ['ຈັນ', 'ອັງຄານ', 'ພຸດ', 'ພະຫັດ', 'ສຸກ', 'ເສົາ', 'ອາທິດ']
+          : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+      return Column(
+        children: List.generate(7, (index) {
+          final dayData = weeklyData[index + 1]!;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  child: Text(
+                    dayNames[index],
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Exercise indicator
+                      Container(
+                        width: math.max(4, 20 + (dayData['exercise']! * 4.0)),
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // Sleep indicator
+                      Container(
+                        width: math.max(4, 20 + (dayData['sleep']! * 4.0)),
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // Stress indicator
+                      Container(
+                        width: math.max(4, 20 + (dayData['stress']! * 4.0)),
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      );
+    } catch (e) {
+      debugPrint('Error building weekly pattern: $e');
+      return Container(
+        child: Text(
+          _isLaoLanguage
+              ? 'ຜິດພາດໃນການສະແດງຮູບແບບອາທິດ'
+              : 'Error displaying weekly pattern',
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+      );
     }
-
-    final dayNames = _isLaoLanguage
-        ? ['ຈັນ', 'ອັງຄານ', 'ພຸດ', 'ພະຫັດ', 'ສຸກ', 'ເສົາ', 'ອາທິດ']
-        : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-    return Column(
-      children: List.generate(7, (index) {
-        final dayData = weeklyData[index + 1]!;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 40,
-                child: Text(
-                  dayNames[index],
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Row(
-                  children: [
-                    // Exercise indicator
-                    Container(
-                      width: 20 + (dayData['exercise']! * 4.0),
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    // Sleep indicator
-                    Container(
-                      width: 20 + (dayData['sleep']! * 4.0),
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    // Stress indicator
-                    Container(
-                      width: 20 + (dayData['stress']! * 4.0),
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-    );
   }
 }
 
@@ -1746,45 +1670,51 @@ class _LineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
+    try {
+      if (data.isEmpty || size.width <= 0 || size.height <= 0) return;
 
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+      final paint = Paint()
+        ..color = color
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
 
-    final path = Path();
-    final maxValue = data.reduce(math.max);
-    final minValue = data.reduce(math.min);
-    final range = maxValue - minValue;
+      final path = Path();
+      final maxValue = data.isNotEmpty ? data.reduce(math.max) : 1.0;
+      final minValue = data.isNotEmpty ? data.reduce(math.min) : 0.0;
+      final range = maxValue - minValue;
 
-    for (int i = 0; i < data.length; i++) {
-      final x = (i / (data.length - 1)) * size.width;
-      final normalizedValue = range > 0 ? (data[i] - minValue) / range : 0.5;
-      final y = size.height - (normalizedValue * size.height);
+      for (int i = 0; i < data.length; i++) {
+        final x = (i / math.max(1, data.length - 1)) * size.width;
+        final normalizedValue = range > 0 ? (data[i] - minValue) / range : 0.5;
+        final y = size.height - (normalizedValue * size.height);
 
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
       }
-    }
 
-    canvas.drawPath(path, paint);
+      canvas.drawPath(path, paint);
 
-    // Draw points
-    final pointPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+      // Draw points
+      final pointPaint = Paint()
+        ..color = color
+        ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < data.length; i++) {
-      final x = (i / (data.length - 1)) * size.width;
-      final normalizedValue = range > 0 ? (data[i] - minValue) / range : 0.5;
-      final y = size.height - (normalizedValue * size.height);
-      canvas.drawCircle(Offset(x, y), 3, pointPaint);
+      for (int i = 0; i < data.length; i++) {
+        final x = (i / math.max(1, data.length - 1)) * size.width;
+        final normalizedValue = range > 0 ? (data[i] - minValue) / range : 0.5;
+        final y = size.height - (normalizedValue * size.height);
+        canvas.drawCircle(Offset(x, y), 3, pointPaint);
+      }
+    } catch (e) {
+      debugPrint('Error painting chart: $e');
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
+
