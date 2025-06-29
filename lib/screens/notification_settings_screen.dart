@@ -1643,7 +1643,7 @@ class _NotificationSettingsScreenState
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           const SizedBox(height: 24),
 

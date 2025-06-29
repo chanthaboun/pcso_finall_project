@@ -64,7 +64,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SnackBar(
             content: Text('ບໍ່ພົບອີເມວນີ້ໃນລະບົບ'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }

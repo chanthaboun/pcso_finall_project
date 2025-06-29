@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
 import '../services/simple_storage_service.dart';
 import 'home_screen.dart';
 

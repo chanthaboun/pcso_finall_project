@@ -18,6 +18,9 @@ class Goal {
   final bool isCompleted;
   final IconData icon;
   final Color color;
+  final String priority; // ຄວາມສຳຄັນ: high, medium, low
+  final List<String> milestones; // ຈຸດຫມາຍກາງ
+  final List<String> notes; // ບັນທຶກ
 
   Goal({
     required this.id,
@@ -34,10 +37,21 @@ class Goal {
     required this.isCompleted,
     required this.icon,
     required this.color,
+    this.priority = 'medium',
+    this.milestones = const [],
+    this.notes = const [],
   });
 
   double get progressPercentage =>
       math.min((currentValue / targetValue) * 100, 100);
+
+  int get daysRemaining {
+    final now = DateTime.now();
+    if (targetDate.isBefore(now)) return 0;
+    return targetDate.difference(now).inDays;
+  }
+
+  bool get isOverdue => DateTime.now().isAfter(targetDate) && !isCompleted;
 
   Map<String, dynamic> toJson() {
     return {
@@ -53,6 +67,9 @@ class Goal {
       'startDate': startDate.toIso8601String(),
       'targetDate': targetDate.toIso8601String(),
       'isCompleted': isCompleted,
+      'priority': priority,
+      'milestones': milestones,
+      'notes': notes,
     };
   }
 
@@ -72,6 +89,9 @@ class Goal {
       isCompleted: json['isCompleted'] ?? false,
       icon: _getCategoryIcon(json['category'] ?? ''),
       color: _getCategoryColor(json['category'] ?? ''),
+      priority: json['priority'] ?? 'medium',
+      milestones: List<String>.from(json['milestones'] ?? []),
+      notes: List<String>.from(json['notes'] ?? []),
     );
   }
 
@@ -124,6 +144,9 @@ class Goal {
     bool? isCompleted,
     IconData? icon,
     Color? color,
+    String? priority,
+    List<String>? milestones,
+    List<String>? notes,
   }) {
     return Goal(
       id: id ?? this.id,
@@ -140,6 +163,9 @@ class Goal {
       isCompleted: isCompleted ?? this.isCompleted,
       icon: icon ?? this.icon,
       color: color ?? this.color,
+      priority: priority ?? this.priority,
+      milestones: milestones ?? this.milestones,
+      notes: notes ?? this.notes,
     );
   }
 }
@@ -151,14 +177,25 @@ class GoalsScreen extends StatefulWidget {
   State<GoalsScreen> createState() => _GoalsScreenState();
 }
 
-class _GoalsScreenState extends State<GoalsScreen> {
+class _GoalsScreenState extends State<GoalsScreen>
+    with TickerProviderStateMixin {
   List<Goal> _goals = [];
   bool _isLaoLanguage = true;
+  String _filterCategory = 'all';
+  String _sortBy = 'priority'; // priority, deadline, progress
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _loadGoals();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadGoals() async {
@@ -223,6 +260,26 @@ class _GoalsScreenState extends State<GoalsScreen> {
     }
   }
 
+  void _addNote(Goal goal, String note) {
+    final updatedNotes = List<String>.from(goal.notes)..add(note);
+    final updatedGoal = goal.copyWith(notes: updatedNotes);
+
+    setState(() {
+      final index = _goals.indexWhere((g) => g.id == goal.id);
+      if (index != -1) {
+        _goals[index] = updatedGoal;
+      }
+    });
+    _saveGoals();
+  }
+
+  void _deleteGoal(Goal goal) {
+    setState(() {
+      _goals.removeWhere((g) => g.id == goal.id);
+    });
+    _saveGoals();
+  }
+
   void _showCongratuationsDialog(Goal goal) {
     showDialog(
       context: context,
@@ -243,17 +300,42 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
   }
 
+  List<Goal> get _filteredAndSortedGoals {
+    var filtered = _goals.where((goal) {
+      if (_filterCategory == 'all') return true;
+      return goal.category == _filterCategory;
+    }).toList();
+
+    // Sort by selected criteria
+    filtered.sort((a, b) {
+      switch (_sortBy) {
+        case 'priority':
+          final priorityOrder = {'high': 0, 'medium': 1, 'low': 2};
+          return priorityOrder[a.priority]!
+              .compareTo(priorityOrder[b.priority]!);
+        case 'deadline':
+          return a.targetDate.compareTo(b.targetDate);
+        case 'progress':
+          return b.progressPercentage.compareTo(a.progressPercentage);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }
+
   List<Goal> get _activeGoals =>
-      _goals.where((goal) => !goal.isCompleted).toList();
+      _filteredAndSortedGoals.where((goal) => !goal.isCompleted).toList();
   List<Goal> get _completedGoals =>
-      _goals.where((goal) => goal.isCompleted).toList();
+      _filteredAndSortedGoals.where((goal) => goal.isCompleted).toList();
+  List<Goal> get _overdueGoals =>
+      _goals.where((goal) => goal.isOverdue).toList();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: Text(_isLaoLanguage ? '🎯 ເປົ້າຫມາຍ' : '🎯 Goals'),
         backgroundColor: Colors.transparent,
@@ -273,56 +355,148 @@ class _GoalsScreenState extends State<GoalsScreen> {
               ),
             ),
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort),
+            onSelected: (value) {
+              setState(() {
+                _sortBy = value;
+              });
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'priority',
+                child: Text(_isLaoLanguage ? 'ຄວາມສຳຄັນ' : 'Priority'),
+              ),
+              PopupMenuItem(
+                value: 'deadline',
+                child: Text(_isLaoLanguage ? 'ກຳນົດເວລາ' : 'Deadline'),
+              ),
+              PopupMenuItem(
+                value: 'progress',
+                child: Text(_isLaoLanguage ? 'ຄວາມກ້າວໜ້າ' : 'Progress'),
+              ),
+            ],
+          ),
           IconButton(
             onPressed: _addGoal,
             icon: const Icon(Icons.add),
           ),
         ],
+        bottom: _goals.isNotEmpty
+            ? TabBar(
+                controller: _tabController,
+                labelColor: const Color(0xFFE91E63),
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: const Color(0xFFE91E63),
+                tabs: [
+                  Tab(
+                    icon: const Icon(Icons.play_arrow),
+                    text: _isLaoLanguage ? 'ດຳເນີນການ' : 'Active',
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.check_circle),
+                    text: _isLaoLanguage ? 'ສຳເລັດ' : 'Completed',
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.analytics),
+                    text: _isLaoLanguage ? 'ສະຖິຕິ' : 'Stats',
+                  ),
+                ],
+              )
+            : null,
       ),
       body: _goals.isEmpty
           ? _buildEmptyState()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Progress overview
-                  if (_goals.isNotEmpty) ...[
-                    _buildProgressOverview(),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // Active goals
-                  if (_activeGoals.isNotEmpty) ...[
-                    Text(
-                      _isLaoLanguage ? 'ເປົ້າຫມາຍປະຈຸບັນ' : 'Active Goals',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+          : Column(
+              children: [
+                // Filter chips
+                Container(
+                  height: 60,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip(
+                            'all', _isLaoLanguage ? 'ທັງໝົດ' : 'All'),
+                        _buildFilterChip(
+                            'weight', _isLaoLanguage ? 'ນ້ຳໜັກ' : 'Weight'),
+                        _buildFilterChip('exercise',
+                            _isLaoLanguage ? 'ອອກກຳລັງ' : 'Exercise'),
+                        _buildFilterChip(
+                            'sleep', _isLaoLanguage ? 'ນອນ' : 'Sleep'),
+                        _buildFilterChip(
+                            'stress', _isLaoLanguage ? 'ຄວາມຄຽດ' : 'Stress'),
+                        _buildFilterChip('nutrition',
+                            _isLaoLanguage ? 'ໂພຊະນາການ' : 'Nutrition'),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    ..._activeGoals.map((goal) => _buildGoalCard(goal)),
-                    const SizedBox(height: 24),
-                  ],
+                  ),
+                ),
 
-                  // Completed goals
-                  if (_completedGoals.isNotEmpty) ...[
-                    Text(
-                      _isLaoLanguage
-                          ? 'ເປົ້າຫມາຍທີ່ສຳເລັດແລ້ວ'
-                          : 'Completed Goals',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                // Alert for overdue goals
+                if (_overdueGoals.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red[200]!),
                     ),
-                    const SizedBox(height: 16),
-                    ..._completedGoals.map((goal) => _buildGoalCard(goal)),
-                  ],
-                ],
-              ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning, color: Colors.red[600], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _isLaoLanguage
+                                ? '${_overdueGoals.length} ເປົ້າຫມາຍເກີນກຳນົດ'
+                                : '${_overdueGoals.length} goals overdue',
+                            style: TextStyle(
+                              color: Colors.red[600],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildGoalsList(_activeGoals),
+                      _buildGoalsList(_completedGoals),
+                      _buildStatsTab(),
+                    ],
+                  ),
+                ),
+              ],
             ),
+    );
+  }
+
+  Widget _buildFilterChip(String category, String label) {
+    final isSelected = _filterCategory == category;
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() {
+            _filterCategory = category;
+          });
+        },
+        selectedColor: const Color(0xFFE91E63).withOpacity(0.2),
+        checkmarkColor: const Color(0xFFE91E63),
+        labelStyle: TextStyle(
+          color: isSelected ? const Color(0xFFE91E63) : Colors.grey[600],
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
     );
   }
 
@@ -359,210 +533,727 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
   }
 
-  Widget _buildProgressOverview() {
-    final totalGoals = _goals.length;
-    final completedGoals = _completedGoals.length;
-    final completionRate =
-        totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0.0;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE91E63), Color(0xFFF8BBD9)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  Widget _buildGoalsList(List<Goal> goals) {
+    if (goals.isEmpty) {
+      return Center(
+        child: Text(
+          _isLaoLanguage
+              ? 'ບໍ່ມີເປົ້າຫມາຍໃນໝວດນີ້'
+              : 'No goals in this category',
+          style: TextStyle(color: Colors.grey[600]),
         ),
-        borderRadius: BorderRadius.circular(16),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: goals.length,
+      itemBuilder: (context, index) => _buildCompactGoalCard(goals[index]),
+    );
+  }
+
+  Widget _buildCompactGoalCard(Goal goal) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: goal.isOverdue
+            ? Border.all(color: Colors.red[300]!, width: 1)
+            : null,
       ),
+      child: InkWell(
+        onTap: () => _showGoalDetails(goal),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  // Icon with priority indicator
+                  Stack(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: goal.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Icon(goal.icon, color: goal.color, size: 20),
+                      ),
+                      if (goal.priority == 'high')
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Goal info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isLaoLanguage ? goal.titleLao : goal.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              '${goal.currentValue.toStringAsFixed(goal.unit == 'times' ? 0 : 1)}/${goal.targetValue.toStringAsFixed(goal.unit == 'times' ? 0 : 1)} ${goal.unit}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (goal.daysRemaining > 0)
+                              Text(
+                                '${goal.daysRemaining} ${_isLaoLanguage ? 'ມື້' : 'days'}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: goal.daysRemaining <= 7
+                                      ? Colors.orange
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Progress circle
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(
+                          value: goal.progressPercentage / 100,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(goal.color),
+                          strokeWidth: 3,
+                        ),
+                      ),
+                      Text(
+                        '${goal.progressPercentage.toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              if (!goal.isCompleted) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showUpdateProgressDialog(goal),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: Text(_isLaoLanguage ? 'ອັບເດດ' : 'Update'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: goal.color,
+                          side: BorderSide(color: goal.color),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton(
+                      onPressed: () => _showAddNoteDialog(goal),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey[600],
+                        side: BorderSide(color: Colors.grey[300]!),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                      ),
+                      child: Icon(Icons.note_add, size: 16),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsTab() {
+    final totalGoals = _goals.length;
+    final completedGoals = _goals.where((g) => g.isCompleted).length;
+    final overdueGoals = _overdueGoals.length;
+    final avgProgress = _goals.isEmpty
+        ? 0.0
+        : _goals.fold<double>(0, (sum, goal) => sum + goal.progressPercentage) /
+            _goals.length;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Overview cards
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  totalGoals.toString(),
+                  _isLaoLanguage ? 'ທັງໝົດ' : 'Total',
+                  Colors.blue,
+                  Icons.flag,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  completedGoals.toString(),
+                  _isLaoLanguage ? 'ສຳເລັດ' : 'Completed',
+                  Colors.green,
+                  Icons.check_circle,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  overdueGoals.toString(),
+                  _isLaoLanguage ? 'ເກີນກຳນົດ' : 'Overdue',
+                  Colors.red,
+                  Icons.warning,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  '${avgProgress.toStringAsFixed(0)}%',
+                  _isLaoLanguage ? 'ຄ່າສະເລ່ຍ' : 'Avg Progress',
+                  Colors.orange,
+                  Icons.trending_up,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Category breakdown
           Text(
-            _isLaoLanguage ? 'ສະຖິຕິເປົ້າຫມາຍ' : 'Goals Overview',
+            _isLaoLanguage ? 'ແຍກຕາມປະເພດ' : 'By Category',
             style: const TextStyle(
-              color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(
-                '$totalGoals',
-                _isLaoLanguage ? 'ທັງໝົດ' : 'Total',
-                Colors.white,
-              ),
-              _buildStatItem(
-                '$completedGoals',
-                _isLaoLanguage ? 'ສຳເລັດ' : 'Completed',
-                Colors.white,
-              ),
-              _buildStatItem(
-                '${completionRate.toStringAsFixed(0)}%',
-                _isLaoLanguage ? 'ອັດຕາສຳເລັດ' : 'Success Rate',
-                Colors.white,
-              ),
-            ],
-          ),
+          ..._buildCategoryStats(),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String value, String label, Color color) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: color.withOpacity(0.8),
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGoalCard(Goal goal) {
+  Widget _buildStatCard(
+      String value, String label, Color color, IconData icon) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color.withOpacity(0.8),
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  List<Widget> _buildCategoryStats() {
+    final categories = ['weight', 'exercise', 'sleep', 'stress', 'nutrition'];
+    final categoryLabels = {
+      'weight': _isLaoLanguage ? 'ນ້ຳໜັກ' : 'Weight',
+      'exercise': _isLaoLanguage ? 'ອອກກຳລັງ' : 'Exercise',
+      'sleep': _isLaoLanguage ? 'ນອນ' : 'Sleep',
+      'stress': _isLaoLanguage ? 'ຄວາມຄຽດ' : 'Stress',
+      'nutrition': _isLaoLanguage ? 'ໂພຊະນາການ' : 'Nutrition',
+    };
+
+    return categories.map((category) {
+      final categoryGoals =
+          _goals.where((g) => g.category == category).toList();
+      final completedCount = categoryGoals.where((g) => g.isCompleted).length;
+      final totalCount = categoryGoals.length;
+      final percentage =
+          totalCount > 0 ? (completedCount / totalCount) * 100 : 0.0;
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: goal.color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Icon(
-                    goal.icon,
-                    color: goal.color,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _isLaoLanguage ? goal.titleLao : goal.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _isLaoLanguage ? goal.descriptionLao : goal.description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (goal.isCompleted)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.green,
-                      size: 20,
-                    ),
-                  ),
-              ],
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Goal._getCategoryColor(category).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                Goal._getCategoryIcon(category),
+                color: Goal._getCategoryColor(category),
+                size: 20,
+              ),
             ),
-            const SizedBox(height: 20),
-
-            // Progress bar
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${goal.currentValue.toStringAsFixed(goal.unit == 'times' ? 0 : 1)} / ${goal.targetValue.toStringAsFixed(goal.unit == 'times' ? 0 : 1)} ${goal.unit}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      '${goal.progressPercentage.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: goal.color,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: goal.progressPercentage / 100,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(goal.color),
-                  minHeight: 6,
-                ),
-              ],
-            ),
-
-            if (!goal.isCompleted) ...[
-              const SizedBox(height: 16),
-              Row(
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showUpdateProgressDialog(goal),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: Text(_isLaoLanguage ? 'ອັບເດດ' : 'Update'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: goal.color,
-                        side: BorderSide(color: goal.color),
-                      ),
+                  Text(
+                    categoryLabels[category]!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  LinearProgressIndicator(
+                    value: percentage / 100,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Goal._getCategoryColor(category),
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
+            Text(
+              '$completedCount/$totalCount',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
+      );
+    }).toList();
+  }
+
+  void _showGoalDetails(Goal goal) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Goal header
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: goal.color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Icon(goal.icon, color: goal.color, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isLaoLanguage ? goal.titleLao : goal.title,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _isLaoLanguage
+                              ? goal.descriptionLao
+                              : goal.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        _showDeleteConfirmation(goal);
+                      } else if (value == 'edit') {
+                        _editGoal(goal);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit, size: 20),
+                            const SizedBox(width: 8),
+                            Text(_isLaoLanguage ? 'ແກ້ໄຂ' : 'Edit'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete,
+                                size: 20, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text(
+                              _isLaoLanguage ? 'ລຶບ' : 'Delete',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Progress section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: goal.color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _isLaoLanguage ? 'ຄວາມກ້າວໜ້າ' : 'Progress',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${goal.progressPercentage.toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: goal.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: goal.progressPercentage / 100,
+                      backgroundColor: Colors.white.withOpacity(0.5),
+                      valueColor: AlwaysStoppedAnimation<Color>(goal.color),
+                      minHeight: 8,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${goal.currentValue.toStringAsFixed(goal.unit == 'times' ? 0 : 1)} ${goal.unit}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          '${goal.targetValue.toStringAsFixed(goal.unit == 'times' ? 0 : 1)} ${goal.unit}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Goal info
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(
+                      _isLaoLanguage ? 'ວັນທີ່ເລີ່ມ' : 'Start Date',
+                      '${goal.startDate.day}/${goal.startDate.month}/${goal.startDate.year}',
+                      Icons.calendar_today,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoItem(
+                      _isLaoLanguage ? 'ກຳນົດສິ້ນສຸດ' : 'Target Date',
+                      '${goal.targetDate.day}/${goal.targetDate.month}/${goal.targetDate.year}',
+                      Icons.flag,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(
+                      _isLaoLanguage ? 'ຄວາມສຳຄັນ' : 'Priority',
+                      goal.priority == 'high'
+                          ? (_isLaoLanguage ? 'ສູງ' : 'High')
+                          : goal.priority == 'medium'
+                              ? (_isLaoLanguage ? 'ກາງ' : 'Medium')
+                              : (_isLaoLanguage ? 'ຕ່ຳ' : 'Low'),
+                      Icons.priority_high,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoItem(
+                      _isLaoLanguage ? 'ເຫຼືອເວລາ' : 'Days Left',
+                      goal.daysRemaining > 0
+                          ? '${goal.daysRemaining} ${_isLaoLanguage ? 'ມື້' : 'days'}'
+                          : (_isLaoLanguage ? 'ໝົດກຳນົດ' : 'Overdue'),
+                      Icons.access_time,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Notes section
+              Text(
+                _isLaoLanguage
+                    ? 'ບັນທຶກ (${goal.notes.length})'
+                    : 'Notes (${goal.notes.length})',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              Expanded(
+                child: goal.notes.isEmpty
+                    ? Center(
+                        child: Text(
+                          _isLaoLanguage ? 'ຍັງບໍ່ມີບັນທຶກ' : 'No notes yet',
+                          style: TextStyle(color: Colors.grey[500]),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: goal.notes.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              goal.notes[index],
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+
+              if (!goal.isCompleted) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showUpdateProgressDialog(goal);
+                        },
+                        icon: const Icon(Icons.add),
+                        label: Text(_isLaoLanguage
+                            ? 'ອັບເດດຄວາມກ້າວໜ້າ'
+                            : 'Update Progress'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: goal.color,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Goal goal) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_isLaoLanguage ? 'ລຶບເປົ້າຫມາຍ' : 'Delete Goal'),
+        content: Text(
+          _isLaoLanguage
+              ? 'ເຈົ້າຕ້ອງການລຶບເປົ້າຫມາຍນີ້ບໍ?'
+              : 'Are you sure you want to delete this goal?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(_isLaoLanguage ? 'ຍົກເລີກ' : 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              _deleteGoal(goal);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(_isLaoLanguage ? 'ລຶບ' : 'Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editGoal(Goal goal) {
+    // Implementation for editing goal
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_isLaoLanguage
+            ? 'ຟັງຊັນແກ້ໄຂຈະມາໃນອະນາຄົດ'
+            : 'Edit feature coming soon'),
       ),
     );
   }
@@ -574,14 +1265,36 @@ class _GoalsScreenState extends State<GoalsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(_isLaoLanguage ? 'ອັບເດດຄວາມກ້າວໜ້າ' : 'Update Progress'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText:
-                '${_isLaoLanguage ? 'ຄ່າໃໝ່' : 'New value'} (${goal.unit})',
-            hintText: goal.currentValue.toString(),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText:
+                    '${_isLaoLanguage ? 'ຄ່າໃໝ່' : 'New value'} (${goal.unit})',
+                hintText: goal.currentValue.toString(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Quick buttons for common increments
+            Wrap(
+              spacing: 8,
+              children: [
+                _buildQuickButton('+1',
+                    () => controller.text = (goal.currentValue + 1).toString()),
+                _buildQuickButton('+5',
+                    () => controller.text = (goal.currentValue + 5).toString()),
+                _buildQuickButton(
+                    '+10',
+                    () =>
+                        controller.text = (goal.currentValue + 10).toString()),
+                _buildQuickButton('${_isLaoLanguage ? 'ສຳເລັດ' : 'Complete'}',
+                    () => controller.text = goal.targetValue.toString()),
+              ],
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -597,6 +1310,51 @@ class _GoalsScreenState extends State<GoalsScreen> {
               }
             },
             child: Text(_isLaoLanguage ? 'ບັນທຶກ' : 'Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickButton(String label, VoidCallback onPressed) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        minimumSize: Size.zero,
+      ),
+      child: Text(label, style: const TextStyle(fontSize: 12)),
+    );
+  }
+
+  void _showAddNoteDialog(Goal goal) {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_isLaoLanguage ? 'ເພີ່ມບັນທຶກ' : 'Add Note'),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: _isLaoLanguage ? 'ເຂີຍນບັນທຶກ...' : 'Write a note...',
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(_isLaoLanguage ? 'ຍົກເລີກ' : 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                _addNote(goal, controller.text);
+                Navigator.pop(context);
+              }
+            },
+            child: Text(_isLaoLanguage ? 'ເພີ່ມ' : 'Add'),
           ),
         ],
       ),
@@ -623,6 +1381,7 @@ class _AddGoalModalState extends State<_AddGoalModal> {
 
   String _selectedCategory = 'weight';
   String _selectedUnit = 'kg';
+  String _selectedPriority = 'medium';
   DateTime _targetDate = DateTime.now().add(const Duration(days: 30));
 
   final Map<String, List<String>> _categoryUnits = {
@@ -723,6 +1482,31 @@ class _AddGoalModalState extends State<_AddGoalModal> {
                           _updateUnits();
                         });
                       },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Priority selection
+                    Text(
+                      widget.isLaoLanguage ? 'ຄວາມສຳຄັນ:' : 'Priority:',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _buildPriorityChip('high',
+                            widget.isLaoLanguage ? 'ສູງ' : 'High', Colors.red),
+                        const SizedBox(width: 8),
+                        _buildPriorityChip(
+                            'medium',
+                            widget.isLaoLanguage ? 'ກາງ' : 'Medium',
+                            Colors.orange),
+                        const SizedBox(width: 8),
+                        _buildPriorityChip('low',
+                            widget.isLaoLanguage ? 'ຕ່ຳ' : 'Low', Colors.green),
+                      ],
                     ),
                     const SizedBox(height: 16),
 
@@ -900,6 +1684,9 @@ class _AddGoalModalState extends State<_AddGoalModal> {
                       isCompleted: false,
                       icon: Goal._getCategoryIcon(_selectedCategory),
                       color: Goal._getCategoryColor(_selectedCategory),
+                      priority: _selectedPriority,
+                      milestones: [],
+                      notes: [],
                     );
 
                     widget.onAdd(goal);
@@ -923,6 +1710,37 @@ class _AddGoalModalState extends State<_AddGoalModal> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPriorityChip(String priority, String label, Color color) {
+    final isSelected = _selectedPriority == priority;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedPriority = priority;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withOpacity(0.2) : Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? color : Colors.grey[300]!,
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isSelected ? color : Colors.grey[600],
+            ),
+          ),
         ),
       ),
     );

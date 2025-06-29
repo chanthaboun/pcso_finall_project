@@ -21,11 +21,9 @@ class ThemeProvider extends ChangeNotifier {
       primary: Color(0xFFE91E63),
       secondary: Color(0xFFF8BBD9),
       surface: Colors.white,
-      background: Color(0xFFFCE4EC),
       onPrimary: Colors.white,
       onSecondary: Color(0xFFE91E63),
       onSurface: Colors.black87,
-      onBackground: Colors.black87,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
@@ -60,11 +58,9 @@ class ThemeProvider extends ChangeNotifier {
       primary: Color(0xFFE91E63),
       secondary: Color(0xFF7C3F47),
       surface: Color(0xFF1E1E1E),
-      background: Color(0xFF121212),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Colors.white,
-      onBackground: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,

@@ -487,8 +487,8 @@ class _SleepScreenState extends State<SleepScreen>
   bool _isTracking = false;
   DateTime? _sleepStartTime;
   String _sleepGoal = "8h 0m";
-  List<String> _sleepNotes = [];
-  String _selectedNote = "";
+  final List<String> _sleepNotes = [];
+  final String _selectedNote = "";
   late TabController _tabController;
 
   // Sleep goal options
@@ -675,7 +675,7 @@ class _SleepScreenState extends State<SleepScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Color(0xFF6A5ACD), Color(0xFF9370DB)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -691,7 +691,7 @@ class _SleepScreenState extends State<SleepScreen>
             ),
             child: Column(
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.bedtime, color: Colors.white, size: 28),
                     SizedBox(width: 12),
@@ -705,7 +705,7 @@ class _SleepScreenState extends State<SleepScreen>
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 if (!_isTracking) ...[
                   ElevatedButton.icon(
                     onPressed: () {
@@ -714,32 +714,32 @@ class _SleepScreenState extends State<SleepScreen>
                         _sleepStartTime = DateTime.now();
                       });
                     },
-                    icon: Icon(Icons.play_arrow),
-                    label: Text('ເລີ່ມຕິດຕາມ'),
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('ເລີ່ມຕິດຕາມ'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: Color(0xFF6A5ACD),
+                      foregroundColor: const Color(0xFF6A5ACD),
                       padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
                   ),
                 ] else ...[
-                  Text(
+                  const Text(
                     'ກຳລັງຕິດຕາມ...',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'ເລີ່ມ: ${_sleepStartTime!.hour}:${_sleepStartTime!.minute.toString().padLeft(2, '0')}',
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
                       setState(() {
@@ -751,13 +751,13 @@ class _SleepScreenState extends State<SleepScreen>
                         );
                       });
                     },
-                    icon: Icon(Icons.stop),
-                    label: Text('ຢຸດຕິດຕາມ'),
+                    icon: const Icon(Icons.stop),
+                    label: const Text('ຢຸດຕິດຕາມ'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                       padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -767,7 +767,7 @@ class _SleepScreenState extends State<SleepScreen>
               ],
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Sleep Input Card
           Container(
@@ -786,7 +786,7 @@ class _SleepScreenState extends State<SleepScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'ບັນທຶກການນອນ',
                   style: TextStyle(
                     fontSize: 18,
@@ -794,7 +794,7 @@ class _SleepScreenState extends State<SleepScreen>
                     color: Color(0xFFE91E63),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Bed and Wake Time Row
                 Row(
@@ -817,7 +817,7 @@ class _SleepScreenState extends State<SleepScreen>
                         },
                       ),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: _buildTimeSelector(
                         icon: Icons.wb_sunny,
@@ -839,11 +839,11 @@ class _SleepScreenState extends State<SleepScreen>
                   ],
                 ),
 
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Duration and Goal Achievement
                 Container(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: _isGoalAchieved()
                         ? Colors.green.withOpacity(0.1)
@@ -858,29 +858,29 @@ class _SleepScreenState extends State<SleepScreen>
                             : Icons.access_time,
                         color: _isGoalAchieved() ? Colors.green : Colors.orange,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'ໄລຍະເວລານອນ: ${_calculateSleepDuration()}',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       if (_isGoalAchieved())
-                        Text('🎯', style: TextStyle(fontSize: 20)),
+                        const Text('🎯', style: TextStyle(fontSize: 20)),
                     ],
                   ),
                 ),
 
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Sleep Quality
-                Text(
+                const Text(
                   'ຄຸນນະພາບການນອນ:',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: List.generate(5, (index) {
@@ -892,7 +892,7 @@ class _SleepScreenState extends State<SleepScreen>
                         });
                       },
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 200),
                         width: 45,
                         height: 45,
                         decoration: BoxDecoration(
@@ -906,7 +906,7 @@ class _SleepScreenState extends State<SleepScreen>
                                     color: _getQualityColor(quality)
                                         .withOpacity(0.4),
                                     blurRadius: 8,
-                                    offset: Offset(0, 2),
+                                    offset: const Offset(0, 2),
                                   ),
                                 ]
                               : [],
@@ -927,7 +927,7 @@ class _SleepScreenState extends State<SleepScreen>
                     );
                   }),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Center(
                   child: Text(
                     _getQualityText(_sleepQuality),
@@ -939,17 +939,17 @@ class _SleepScreenState extends State<SleepScreen>
                   ),
                 ),
 
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Sleep Notes
-                Text(
+                const Text(
                   'ປັດໃຈທີ່ສົ່ງຜົນ:',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -967,13 +967,13 @@ class _SleepScreenState extends State<SleepScreen>
                           }
                         });
                       },
-                      selectedColor: Color(0xFFE91E63).withOpacity(0.2),
-                      checkmarkColor: Color(0xFFE91E63),
+                      selectedColor: const Color(0xFFE91E63).withOpacity(0.2),
+                      checkmarkColor: const Color(0xFFE91E63),
                     );
                   }).toList(),
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // Save Button
                 SizedBox(
@@ -1014,23 +1014,23 @@ class _SleepScreenState extends State<SleepScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Color(0xFFE91E63).withOpacity(0.1),
+          color: const Color(0xFFE91E63).withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, color: Color(0xFFE91E63), size: 20),
-            SizedBox(height: 4),
+            Icon(icon, color: const Color(0xFFE91E63), size: 20),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               '${time.hour}:${time.minute.toString().padLeft(2, '0')}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFFE91E63),
@@ -1058,7 +1058,7 @@ class _SleepScreenState extends State<SleepScreen>
                   Colors.amber,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
                   'ເວລາເຉລີ່ຍ',
@@ -1069,7 +1069,7 @@ class _SleepScreenState extends State<SleepScreen>
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -1080,7 +1080,7 @@ class _SleepScreenState extends State<SleepScreen>
                   Colors.green,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
                   'ບັນທຶກທັງໝົດ',
@@ -1091,11 +1091,11 @@ class _SleepScreenState extends State<SleepScreen>
               ),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Sleep Goal Setting
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1110,14 +1110,14 @@ class _SleepScreenState extends State<SleepScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'ກຳນົດເປົ້າໝາຍການນອນ',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _sleepGoal,
                   decoration: InputDecoration(
@@ -1125,7 +1125,7 @@ class _SleepScreenState extends State<SleepScreen>
                       borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: _goalOptions.map((goal) {
                     return DropdownMenuItem(
@@ -1154,7 +1154,7 @@ class _SleepScreenState extends State<SleepScreen>
   Widget _buildStatCard(
       String label, String value, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -1162,14 +1162,14 @@ class _SleepScreenState extends State<SleepScreen>
           BoxShadow(
             color: color.withOpacity(0.1),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         children: [
           Icon(icon, color: color, size: 24),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
@@ -1178,7 +1178,7 @@ class _SleepScreenState extends State<SleepScreen>
               color: color,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
@@ -1203,7 +1203,7 @@ class _SleepScreenState extends State<SleepScreen>
                   size: 64,
                   color: Colors.grey[400],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   'ຍັງບໍ່ມີຂໍ້ມູນການນອນ',
                   style: TextStyle(
@@ -1215,7 +1215,7 @@ class _SleepScreenState extends State<SleepScreen>
             ),
           )
         : ListView.builder(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             itemCount: _sleepRecords.length,
             itemBuilder: (context, index) {
               final record = _sleepRecords[index];
@@ -1248,7 +1248,7 @@ class _SleepScreenState extends State<SleepScreen>
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1257,21 +1257,21 @@ class _SleepScreenState extends State<SleepScreen>
                                 children: [
                                   Text(
                                     '${date.day}/${date.month}/${date.year}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   if (record['goalAchieved'] == true) ...[
-                                    SizedBox(width: 8),
-                                    Text('🎯', style: TextStyle(fontSize: 16)),
+                                    const SizedBox(width: 8),
+                                    const Text('🎯', style: TextStyle(fontSize: 16)),
                                   ],
                                 ],
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 '${record['bedTime']} - ${record['wakeTime']}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
                                 ),
@@ -1284,13 +1284,13 @@ class _SleepScreenState extends State<SleepScreen>
                           children: [
                             Text(
                               record['duration'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFE91E63),
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               _getQualityText(record['quality']),
                               style: TextStyle(
@@ -1303,13 +1303,13 @@ class _SleepScreenState extends State<SleepScreen>
                       ],
                     ),
                     if (notes.isNotEmpty) ...[
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
                         children: notes.map<Widget>((note) {
                           return Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
@@ -1353,10 +1353,10 @@ class _SleepScreenState extends State<SleepScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Color(0xFFE91E63),
+          labelColor: const Color(0xFFE91E63),
           unselectedLabelColor: Colors.grey,
-          indicatorColor: Color(0xFFE91E63),
-          tabs: [
+          indicatorColor: const Color(0xFFE91E63),
+          tabs: const [
             Tab(icon: Icon(Icons.add), text: 'ບັນທຶກ'),
             Tab(icon: Icon(Icons.analytics), text: 'ສະຖິຕິ'),
             Tab(icon: Icon(Icons.history), text: 'ປະຫວັດ'),

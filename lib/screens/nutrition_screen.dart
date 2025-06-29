@@ -624,7 +624,7 @@ class _NutritionScreenState extends State<NutritionScreen>
   // Nutrition tracking
   int _dailyCalorieGoal = 2000;
   double _waterIntake = 0; // in glasses
-  List<String> _selectedNutritionTags = [];
+  final List<String> _selectedNutritionTags = [];
 
   late TabController _tabController;
 
@@ -852,7 +852,7 @@ class _NutritionScreenState extends State<NutritionScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Color(0xFF4CAF50), Color(0xFF8BC34A)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -868,7 +868,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             ),
             child: Column(
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.restaurant, color: Colors.white, size: 24),
                     SizedBox(width: 8),
@@ -882,7 +882,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -890,13 +890,13 @@ class _NutritionScreenState extends State<NutritionScreen>
                         children: [
                           Text(
                             '${_getTodayCalories()}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'Calories',
                             style: TextStyle(color: Colors.white70),
                           ),
@@ -909,13 +909,13 @@ class _NutritionScreenState extends State<NutritionScreen>
                         children: [
                           Text(
                             '${_getTodayMeals()}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'ມື້ອາຫານ',
                             style: TextStyle(color: Colors.white70),
                           ),
@@ -928,13 +928,13 @@ class _NutritionScreenState extends State<NutritionScreen>
                         children: [
                           Text(
                             '${_waterIntake.toInt()}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'ແກ້ວນ້ຳ',
                             style: TextStyle(color: Colors.white70),
                           ),
@@ -946,11 +946,11 @@ class _NutritionScreenState extends State<NutritionScreen>
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Quick meal buttons
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -965,7 +965,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'ເພີ່ມດ່ວນ',
                   style: TextStyle(
                     fontSize: 16,
@@ -973,10 +973,10 @@ class _NutritionScreenState extends State<NutritionScreen>
                     color: Color(0xFFE91E63),
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 GridView.count(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 3,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
@@ -1010,11 +1010,11 @@ class _NutritionScreenState extends State<NutritionScreen>
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Water intake tracker
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1031,32 +1031,32 @@ class _NutritionScreenState extends State<NutritionScreen>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.local_drink, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text(
+                    const Icon(Icons.local_drink, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    const Text(
                       'ການດື່ມນ້ຳ',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     Text(
                       '${_waterIntake.toInt()}/8 ແກ້ວ',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: min(_waterIntake / 8, 1.0),
                   backgroundColor: Colors.blue.withOpacity(0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     ElevatedButton.icon(
@@ -1067,17 +1067,17 @@ class _NutritionScreenState extends State<NutritionScreen>
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setDouble('water_intake', _waterIntake);
                       },
-                      icon: Icon(Icons.add, size: 16),
-                      label: Text('+0.5'),
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text('+0.5'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        minimumSize: Size(0, 0),
+                            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        minimumSize: const Size(0, 0),
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     ElevatedButton.icon(
                       onPressed: () async {
                         setState(() {
@@ -1086,17 +1086,17 @@ class _NutritionScreenState extends State<NutritionScreen>
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setDouble('water_intake', _waterIntake);
                       },
-                      icon: Icon(Icons.add, size: 16),
-                      label: Text('+1'),
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text('+1'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        minimumSize: Size(0, 0),
+                            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        minimumSize: const Size(0, 0),
                       ),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     if (_waterIntake > 0)
                       TextButton(
                         onPressed: () async {
@@ -1106,14 +1106,14 @@ class _NutritionScreenState extends State<NutritionScreen>
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setDouble('water_intake', 0);
                         },
-                        child: Text('Reset'),
+                        child: const Text('Reset'),
                       ),
                   ],
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Add meal form
           Container(
@@ -1132,7 +1132,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'ເພີ່ມອາຫານແບບລະອຽດ',
                   style: TextStyle(
                     fontSize: 16,
@@ -1140,7 +1140,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                     color: Color(0xFFE91E63),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Meal type and name in row
                 Row(
@@ -1150,11 +1150,11 @@ class _NutritionScreenState extends State<NutritionScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ປະເພດ:',
+                          const Text('ປະເພດ:',
                               style: TextStyle(fontWeight: FontWeight.w500)),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(8),
@@ -1162,7 +1162,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                             child: DropdownButton<String>(
                               value: _selectedMealType,
                               isExpanded: true,
-                              underline: SizedBox(),
+                              underline: const SizedBox(),
                               items: _mealTypes.map((type) {
                                 return DropdownMenuItem(
                                   value: type,
@@ -1170,9 +1170,9 @@ class _NutritionScreenState extends State<NutritionScreen>
                                     children: [
                                       Icon(_getMealIcon(type),
                                           color: _getMealColor(type), size: 16),
-                                      SizedBox(width: 6),
+                                      const SizedBox(width: 6),
                                       Text(type,
-                                          style: TextStyle(fontSize: 14)),
+                                          style: const TextStyle(fontSize: 14)),
                                     ],
                                   ),
                                 );
@@ -1189,15 +1189,15 @@ class _NutritionScreenState extends State<NutritionScreen>
                         ],
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       flex: 1,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ສ່ວນ:',
+                          const Text('ສ່ວນ:',
                               style: TextStyle(fontWeight: FontWeight.w500)),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Row(
                             children: [
                               IconButton(
@@ -1205,22 +1205,22 @@ class _NutritionScreenState extends State<NutritionScreen>
                                     ? () => setState(() => _portionSize--)
                                     : null,
                                 icon:
-                                    Icon(Icons.remove_circle_outline, size: 20),
+                                    const Icon(Icons.remove_circle_outline, size: 20),
                                 padding: EdgeInsets.zero,
                                 constraints:
-                                    BoxConstraints(minWidth: 30, minHeight: 30),
+                                    const BoxConstraints(minWidth: 30, minHeight: 30),
                               ),
                               Container(
                                 width: 35,
                                 height: 30,
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFE91E63).withOpacity(0.1),
+                                  color: const Color(0xFFE91E63).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Center(
                                   child: Text(
                                     _portionSize.toString(),
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFFE91E63),
                                     ),
@@ -1231,10 +1231,10 @@ class _NutritionScreenState extends State<NutritionScreen>
                                 onPressed: _portionSize < 10
                                     ? () => setState(() => _portionSize++)
                                     : null,
-                                icon: Icon(Icons.add_circle_outline, size: 20),
+                                icon: const Icon(Icons.add_circle_outline, size: 20),
                                 padding: EdgeInsets.zero,
                                 constraints:
-                                    BoxConstraints(minWidth: 30, minHeight: 30),
+                                    const BoxConstraints(minWidth: 30, minHeight: 30),
                               ),
                             ],
                           ),
@@ -1244,7 +1244,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                   ],
                 ),
 
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // Meal name and calories in row
                 Row(
@@ -1254,9 +1254,9 @@ class _NutritionScreenState extends State<NutritionScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ຊື່ອາຫານ:',
+                          const Text('ຊື່ອາຫານ:',
                               style: TextStyle(fontWeight: FontWeight.w500)),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           LaoTextField(
                             controller: _mealController,
                             hintText: 'ປ້ອນຊື່ອາຫານ...',
@@ -1264,15 +1264,15 @@ class _NutritionScreenState extends State<NutritionScreen>
                         ],
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       flex: 1,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Calories:',
+                          const Text('Calories:',
                               style: TextStyle(fontWeight: FontWeight.w500)),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           LaoTextField(
                             controller: _caloriesController,
                             hintText: '0',
@@ -1283,12 +1283,12 @@ class _NutritionScreenState extends State<NutritionScreen>
                   ],
                 ),
 
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // Nutrition tags
-                Text('ປະເພດອາຫານ:',
+                const Text('ປະເພດອາຫານ:',
                     style: TextStyle(fontWeight: FontWeight.w500)),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
@@ -1306,14 +1306,14 @@ class _NutritionScreenState extends State<NutritionScreen>
                       },
                       child: Container(
                         padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Color(0xFFE91E63).withOpacity(0.2)
+                              ? const Color(0xFFE91E63).withOpacity(0.2)
                               : Colors.grey[200],
                           borderRadius: BorderRadius.circular(12),
                           border: isSelected
-                              ? Border.all(color: Color(0xFFE91E63))
+                              ? Border.all(color: const Color(0xFFE91E63))
                               : null,
                         ),
                         child: Text(
@@ -1321,7 +1321,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                           style: TextStyle(
                             fontSize: 12,
                             color: isSelected
-                                ? Color(0xFFE91E63)
+                                ? const Color(0xFFE91E63)
                                 : Colors.grey[700],
                             fontWeight: isSelected
                                 ? FontWeight.w600
@@ -1333,17 +1333,17 @@ class _NutritionScreenState extends State<NutritionScreen>
                   }).toList(),
                 ),
 
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // Notes
-                Text('ໝາຍເຫດ:', style: TextStyle(fontWeight: FontWeight.w500)),
-                SizedBox(height: 4),
+                const Text('ໝາຍເຫດ:', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 4),
                 LaoTextField(
                   controller: _notesController,
                   hintText: 'ເພີ່ມໝາຍເຫດ...',
                 ),
 
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Add button
                 SizedBox(
@@ -1385,7 +1385,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         children: [
           // Calorie goal progress
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1399,7 +1399,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             ),
             child: Column(
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.local_fire_department, color: Colors.orange),
                     SizedBox(width: 8),
@@ -1412,10 +1412,10 @@ class _NutritionScreenState extends State<NutritionScreen>
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Stack(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 120,
                       width: 120,
                       child: CircularProgressIndicator(
@@ -1423,7 +1423,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                         strokeWidth: 8,
                         backgroundColor: Colors.orange.withOpacity(0.2),
                         valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.orange),
+                            const AlwaysStoppedAnimation<Color>(Colors.orange),
                       ),
                     ),
                     Positioned.fill(
@@ -1433,7 +1433,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                           children: [
                             Text(
                               '$todayCalories',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
@@ -1441,7 +1441,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                             ),
                             Text(
                               '/ $_dailyCalorieGoal',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
                               ),
@@ -1452,7 +1452,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Slider(
                   value: _dailyCalorieGoal.toDouble(),
                   min: 1200,
@@ -1477,11 +1477,11 @@ class _NutritionScreenState extends State<NutritionScreen>
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Meal distribution
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1496,17 +1496,17 @@ class _NutritionScreenState extends State<NutritionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'ການແຈກຢາຍມື້ອາຫານມື້ນີ້',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ...mealCounts.entries.map((entry) {
                   return Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
                       children: [
                         Icon(
@@ -1514,16 +1514,16 @@ class _NutritionScreenState extends State<NutritionScreen>
                           color: _getMealColor(entry.key),
                           size: 20,
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             entry.key,
-                            style: TextStyle(fontSize: 14),
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ),
                         Container(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: _getMealColor(entry.key).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
@@ -1539,15 +1539,15 @@ class _NutritionScreenState extends State<NutritionScreen>
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Weekly summary
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1562,14 +1562,14 @@ class _NutritionScreenState extends State<NutritionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'ສະຖິຕິ 7 ວັນຜ່ານມາ',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -1580,7 +1580,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                         Colors.blue,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
                         'Calories ເຉລີ່ຍ',
@@ -1602,7 +1602,7 @@ class _NutritionScreenState extends State<NutritionScreen>
   Widget _buildStatCard(
       String label, String value, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -1610,7 +1610,7 @@ class _NutritionScreenState extends State<NutritionScreen>
       child: Column(
         children: [
           Icon(icon, color: color, size: 24),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
@@ -1619,7 +1619,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               color: color,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
@@ -1635,21 +1635,21 @@ class _NutritionScreenState extends State<NutritionScreen>
 
   int _getWeeklyMeals() {
     final now = DateTime.now();
-    final weekAgo = now.subtract(Duration(days: 7));
+    final weekAgo = now.subtract(const Duration(days: 7));
     return _nutritionRecords.where((record) {
       final recordDate = DateTime.parse(record['date']);
       return recordDate.isAfter(weekAgo) &&
-          recordDate.isBefore(now.add(Duration(days: 1)));
+          recordDate.isBefore(now.add(const Duration(days: 1)));
     }).length;
   }
 
   int _getAverageCalories() {
     final now = DateTime.now();
-    final weekAgo = now.subtract(Duration(days: 7));
+    final weekAgo = now.subtract(const Duration(days: 7));
     final weeklyRecords = _nutritionRecords.where((record) {
       final recordDate = DateTime.parse(record['date']);
       return recordDate.isAfter(weekAgo) &&
-          recordDate.isBefore(now.add(Duration(days: 1)));
+          recordDate.isBefore(now.add(const Duration(days: 1)));
     }).toList();
 
     if (weeklyRecords.isEmpty) return 0;
@@ -1670,7 +1670,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                   size: 64,
                   color: Colors.grey[400],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   'ຍັງບໍ່ມີຂໍ້ມູນການກິນ',
                   style: TextStyle(
@@ -1678,7 +1678,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                     color: Colors.grey[600],
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'ເພີ່ມອາຫານທຳອິດຂອງເຈົ້າເລີຍ!',
                   style: TextStyle(
@@ -1690,7 +1690,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             ),
           )
         : ListView.builder(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             itemCount: _nutritionRecords.length,
             itemBuilder: (context, index) {
               final record = _nutritionRecords[index];
@@ -1731,7 +1731,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                             size: 24,
                           ),
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1741,7 +1741,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                                   Expanded(
                                     child: Text(
                                       record['mealName'],
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1750,7 +1750,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                                   if (record['calories'] != null &&
                                       record['calories'] > 0)
                                     Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: Colors.orange.withOpacity(0.2),
@@ -1758,7 +1758,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                                       ),
                                       child: Text(
                                         '${record['calories']} Cal',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.orange,
@@ -1767,17 +1767,17 @@ class _NutritionScreenState extends State<NutritionScreen>
                                     ),
                                 ],
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 '${record['mealType']} • ${record['portionSize']} ສ່ວນ',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
                                 ),
                               ),
                               Text(
                                 '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
                                 ),
@@ -1810,7 +1810,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                       ],
                     ),
                     if (nutritionTags.isNotEmpty || notes.isNotEmpty) ...[
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       if (nutritionTags.isNotEmpty)
                         Align(
                           alignment: Alignment.centerLeft,
@@ -1819,7 +1819,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                             runSpacing: 4,
                             children: nutritionTags.map<Widget>((tag) {
                               return Container(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.grey[200],
@@ -1837,10 +1837,10 @@ class _NutritionScreenState extends State<NutritionScreen>
                           ),
                         ),
                       if (notes.isNotEmpty) ...[
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: Colors.grey[100],
                             borderRadius: BorderRadius.circular(8),
@@ -1891,10 +1891,10 @@ class _NutritionScreenState extends State<NutritionScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Color(0xFFE91E63),
+          labelColor: const Color(0xFFE91E63),
           unselectedLabelColor: Colors.grey,
-          indicatorColor: Color(0xFFE91E63),
-          tabs: [
+          indicatorColor: const Color(0xFFE91E63),
+          tabs: const [
             Tab(icon: Icon(Icons.add), text: 'ເພີ່ມ'),
             Tab(icon: Icon(Icons.analytics), text: 'ສະຖິຕິ'),
             Tab(icon: Icon(Icons.history), text: 'ປະຫວັດ'),

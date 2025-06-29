@@ -124,7 +124,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('💊 ການກິນຢາ'),
         backgroundColor: Colors.transparent,
@@ -397,7 +397,7 @@ class _AddMedicationModalState extends State<_AddMedicationModal> {
   final _notesController = TextEditingController();
   String _frequency = 'daily';
   String _type = 'pill';
-  List<TimeOfDay> _times = [const TimeOfDay(hour: 8, minute: 0)];
+  final List<TimeOfDay> _times = [const TimeOfDay(hour: 8, minute: 0)];
 
   @override
   Widget build(BuildContext context) {

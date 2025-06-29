@@ -332,7 +332,7 @@ Remember: It's okay to ask for help. Mental health is just as important as physi
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: Text(_isLaoLanguage ? '📚 ການສຶກສາ PCOS' : '📚 PCOS Education'),
         backgroundColor: Colors.transparent,
@@ -559,7 +559,7 @@ class ArticleDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(isLaoLanguage ? article.titleLao : article.title),
         backgroundColor: Colors.transparent,

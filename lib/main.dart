@@ -97,7 +97,7 @@ class _PCOSCareAppState extends State<PCOSCareApp> {
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaleFactor: 1.0, // ປ້ອງກັນການ scale ຜິດປົກກະຕິ
+            textScaler: TextScaler.linear(1.0), // ປ້ອງກັນການ scale ຜິດປົກກະຕິ
           ),
           child: Shortcuts(
             shortcuts: <LogicalKeySet, Intent>{

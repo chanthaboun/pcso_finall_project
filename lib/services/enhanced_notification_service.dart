@@ -1172,7 +1172,7 @@ class EnhancedNotificationService {
   static const String _settingsKey = 'notification_settings';
 
   static List<NotificationData> _notifications = [];
-  static Map<NotificationType, bool> _settings = {
+  static final Map<NotificationType, bool> _settings = {
     NotificationType.medication: true,
     NotificationType.sleep: true,
     NotificationType.exercise: true,
@@ -1293,7 +1293,7 @@ class EnhancedNotificationService {
     _notifications.add(notification);
     await _saveNotifications();
 
-    print('📅 Scheduled notification: $title for ${scheduledTime}');
+    print('📅 Scheduled notification: $title for $scheduledTime');
     return id;
   }
 

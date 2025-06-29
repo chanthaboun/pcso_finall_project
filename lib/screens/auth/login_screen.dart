@@ -1,6 +1,7 @@
 // import 'package:flutter/material.dart';
 // import '../../services/simple_storage_service.dart';
 // import 'register_screen.dart';
+// import 'forgot_password_screen.dart';
 // import '../home_screen.dart';
 
 // class LoginScreen extends StatefulWidget {
@@ -12,14 +13,25 @@
 
 // class _LoginScreenState extends State<LoginScreen> {
 //   final _formKey = GlobalKey<FormState>();
-//   final _emailController = TextEditingController();
+//   final _emailOrUsernameController = TextEditingController();
 //   final _passwordController = TextEditingController();
 //   bool _obscurePassword = true;
 //   bool _isLoading = false;
 
 //   @override
+//   void initState() {
+//     super.initState();
+//     // Initialize storage when screen loads
+//     _initializeStorage();
+//   }
+
+//   Future<void> _initializeStorage() async {
+//     await SimpleStorageService.initialize();
+//   }
+
+//   @override
 //   void dispose() {
-//     _emailController.dispose();
+//     _emailOrUsernameController.dispose();
 //     _passwordController.dispose();
 //     super.dispose();
 //   }
@@ -32,7 +44,7 @@
 
 //       try {
 //         final user = await SimpleStorageService.login(
-//           _emailController.text.trim(),
+//           _emailOrUsernameController.text.trim(),
 //           _passwordController.text,
 //         );
 
@@ -55,7 +67,7 @@
 //           String errorMessage = 'ເກີດຂໍ້ຜິດພາດ ກະລຸນາລອງໃໝ່';
 
 //           if (e.toString().contains('ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ')) {
-//             errorMessage = 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
+//             errorMessage = 'ອີເມວ/ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
 //           }
 
 //           ScaffoldMessenger.of(context).showSnackBar(
@@ -132,9 +144,9 @@
 //                   child: Column(
 //                     crossAxisAlignment: CrossAxisAlignment.start,
 //                     children: [
-//                       // Email field
+//                       // Email/Username field
 //                       const Text(
-//                         'Email',
+//                         'Email or Username',
 //                         style: TextStyle(
 //                           fontSize: 16,
 //                           fontWeight: FontWeight.w500,
@@ -143,24 +155,21 @@
 //                       ),
 //                       const SizedBox(height: 8),
 //                       TextFormField(
-//                         controller: _emailController,
+//                         controller: _emailOrUsernameController,
 //                         keyboardType: TextInputType.emailAddress,
 //                         decoration: InputDecoration(
-//                           hintText: 'Enter your email',
+//                           hintText: 'Enter your email or username',
 //                           border: OutlineInputBorder(
 //                             borderRadius: BorderRadius.circular(12),
 //                             borderSide: BorderSide.none,
 //                           ),
 //                           filled: true,
 //                           fillColor: Colors.grey[100],
-//                           suffixIcon: const Icon(Icons.email_outlined),
+//                           suffixIcon: const Icon(Icons.person_outline),
 //                         ),
 //                         validator: (value) {
 //                           if (value == null || value.trim().isEmpty) {
-//                             return 'ກະລຸນາປ້ອນອີເມວ';
-//                           }
-//                           if (!value.trim().contains('@')) {
-//                             return 'ອີເມວບໍ່ຖືກຕ້ອງ';
+//                             return 'ກະລຸນາປ້ອນອີເມວ ຫຼື ຊື່ຜູ້ໃຊ້';
 //                           }
 //                           return null;
 //                         },
@@ -215,11 +224,10 @@
 //                         alignment: Alignment.centerRight,
 //                         child: TextButton(
 //                           onPressed: () {
-//                             // TODO: Implement forgot password
-//                             ScaffoldMessenger.of(context).showSnackBar(
-//                               const SnackBar(
-//                                 content: Text('ຄຸນສົມບັດນີ້ຍັງບໍ່ພ້ອມໃຊ້ງານ'),
-//                                 duration: Duration(seconds: 2),
+//                             Navigator.of(context).push(
+//                               MaterialPageRoute(
+//                                 builder: (context) =>
+//                                     const ForgotPasswordScreen(),
 //                               ),
 //                             );
 //                           },
@@ -227,6 +235,7 @@
 //                             'Forgot Password?',
 //                             style: TextStyle(
 //                               color: Color(0xFFE91E63),
+//                               fontWeight: FontWeight.w500,
 //                             ),
 //                           ),
 //                         ),
@@ -310,9 +319,6 @@
 
 
 
-
-
-
 import 'package:flutter/material.dart';
 import '../../services/simple_storage_service.dart';
 import 'register_screen.dart';
@@ -336,12 +342,25 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize storage when screen loads
-    _initializeStorage();
+    _initializeAndCheckLogin();
   }
 
-  Future<void> _initializeStorage() async {
-    await SimpleStorageService.initialize();
+  // ກວດສອບວ່າມີຜູ້ໃຊ້ login ຢູ່ແລ້ວບໍ
+  Future<void> _initializeAndCheckLogin() async {
+    try {
+      await SimpleStorageService.initialize();
+
+      // ກວດສອບວ່າມີຜູ້ໃຊ້ login ຢູ່ແລ້ວບໍ
+      bool isLoggedIn = await SimpleStorageService.isLoggedIn();
+      if (isLoggedIn && mounted) {
+        // ຖ້າມີຜູ້ໃຊ້ login ຢູ່ແລ້ວໃຫ້ໄປຫນ້າ home ເລີຍ
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    } catch (e) {
+      print('Error checking login status: $e');
+    }
   }
 
   @override
@@ -358,12 +377,15 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
+        print('Attempting login...');
         final user = await SimpleStorageService.login(
           _emailOrUsernameController.text.trim(),
           _passwordController.text,
         );
 
         if (user != null && mounted) {
+          print('Login successful for: ${user.username}');
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('ຍິນດີຕ້ອນຮັບ ${user.username}! 🎉'),
@@ -372,6 +394,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
+          // ລ້າງຟອມ
+          _emailOrUsernameController.clear();
+          _passwordController.clear();
+
+          // ໄປຫນ້າ home
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
@@ -381,7 +408,12 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           String errorMessage = 'ເກີດຂໍ້ຜິດພາດ ກະລຸນາລອງໃໝ່';
 
-          if (e.toString().contains('ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ')) {
+          String errorStr = e.toString();
+          if (errorStr.contains('ບໍ່ພົບຜູ້ໃຊ້ນີ້ໃນລະບົບ')) {
+            errorMessage = 'ບໍ່ພົບຜູ້ໃຊ້ນີ້ໃນລະບົບ';
+          } else if (errorStr.contains('ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ')) {
+            errorMessage = 'ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
+          } else if (errorStr.contains('ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ')) {
             errorMessage = 'ອີເມວ/ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
           }
 
@@ -403,6 +435,28 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ສຳລັບ debug - ເບິ່ງຂໍ້ມູນທີ່ບັນທຶກໄວ້
+  Future<void> _showDebugInfo() async {
+    final debugInfo = await SimpleStorageService.getDebugInfo();
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Debug Info'),
+          content: SingleChildScrollView(
+            child: Text(debugInfo.toString()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -411,6 +465,13 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          // Debug button - ສາມາດລົບອອກໄດ້ໃນ production
+          IconButton(
+            onPressed: _showDebugInfo,
+            icon: const Icon(Icons.bug_report, color: Colors.grey),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(

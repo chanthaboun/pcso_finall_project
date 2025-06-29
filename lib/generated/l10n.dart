@@ -184,7 +184,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
 
 /// The translations for English (`en`).
 class SEn extends S {
-  SEn([String locale = 'en']) : super(locale);
+  SEn([super.locale = 'en']);
 
   @override
   String get appTitle => 'PCOS Care';
@@ -267,7 +267,7 @@ class SEn extends S {
 
 /// The translations for Lao (`lo`).
 class SLo extends S {
-  SLo([String locale = 'lo']) : super(locale);
+  SLo([super.locale = 'lo']);
 
   @override
   String get appTitle => 'PCOS Care';
@@ -350,7 +350,7 @@ class SLo extends S {
 
 /// The translations for Thai (`th`).
 class STh extends S {
-  STh([String locale = 'th']) : super(locale);
+  STh([super.locale = 'th']);
 
   @override
   String get appTitle => 'PCOS Care';

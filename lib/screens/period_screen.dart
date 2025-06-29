@@ -12,7 +12,7 @@ class PeriodScreen extends StatefulWidget {
 class _PeriodScreenState extends State<PeriodScreen> {
   DateTime _selectedDate = DateTime.now();
   String _selectedFlow = 'ປົກກະຕິ';
-  List<String> _selectedSymptoms = [];
+  final List<String> _selectedSymptoms = [];
   List<Map<String, dynamic>> _periodRecords = [];
 
   final List<String> _flowLevels = ['ເບົາ', 'ປົກກະຕິ', 'ຫຼາຍ', 'ຫຼາຍຫຼາຍ'];
