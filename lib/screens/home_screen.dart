@@ -352,9 +352,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildHeader(),
                     const SizedBox(height: 25),
 
-                    // ✅ Removed EnhancedTestNotificationWidget
-                    // เมนูหลักจะอยู่ทันทีหลังจาก header
-
                     _buildMenuGrid(),
                     const SizedBox(height: 25),
                     _buildQuickStats(),

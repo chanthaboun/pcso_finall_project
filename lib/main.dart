@@ -9,17 +9,17 @@ import 'services/enhanced_notification_service.dart'; // ເພີ່ມ import 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ຕັ້ງຄ່າ system UI
+ 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
     ),
   );
 
-  // ຕັ້ງຄ່າ keyboard ໃຫ້ຮອງຮັບພາສາຫຼາກຫຼາຍ
+  
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  // Initialize notification service only
+  
   try {
     await EnhancedNotificationService.initialize();
     print('Enhanced notification service initialized successfully');
